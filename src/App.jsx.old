@@ -1,0 +1,26 @@
+import React from 'react'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import DashboardPage from './pages/DashboardPage'
+import ProductionPage from './pages/ProductionPage'
+
+export default function App(){
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen bg-[#0a0a0c] text-white">
+        <nav className="p-4 flex gap-4 bg-[#071021]/60">
+          <Link to="/" className="text-sm">Dashboard</Link>
+          <Link to="/production" className="text-sm">Production</Link>
+          <Link to="/login" className="text-sm">Login</Link>
+        </nav>
+
+        <main className="p-6">
+          <Routes>
+            <Route path="/" element={<DashboardPage/>} />
+            <Route path="/production" element={<ProductionPage/>} />
+            <Route path="/login" element={<div>Login page (stub)</div>} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
+  )
+}

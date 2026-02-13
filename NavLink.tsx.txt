@@ -1,0 +1,52 @@
+import { NavLink as RouterNavLink, NavLinkProps } from "react-router-dom";
+import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
+
+interface NavLinkCompatProps extends Omit<NavLinkProps, "className"> {
+  className?: string;
+  activeClassName?: string;
+  pendingClassName?: string;
+}
+
+const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
+  ({ className, activeClassName, pendingClassName, to, ...props }, ref) => {
+    return (
+      <RouterNavLink
+        ref={ref}
+        to={to}
+        className={({ isActive, isPending }) =>
+          cn(
+            // Clase base: Estética de Serendipity Bros
+            "flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-300 group relative",
+            
+            // Estado Pendiente (Luz Ámbar/Procesando)
+            isPending && cn("opacity-50 cursor-wait", pendingClassName),
+            
+            // Estado Activo (Luz Verde/Conectado)
+            isActive 
+              ? cn("bg-primary/10 text-primary font-bold shadow-[0_0_15px_rgba(var(--primary),0.1)]", activeClassName)
+              : "text-muted-foreground hover:bg-white/5 hover:text-white",
+            
+            className
+          )
+        }
+        {...props}
+      >
+        {({ isActive }) => (
+          <>
+            {/* Indicador de "Luz de Estado" en el lateral del link */}
+            <div className={cn(
+              "absolute left-0 w-1 h-4 rounded-r-full transition-all duration-500",
+              isActive ? "bg-primary opacity-100 shadow-[0_0_8px_#22c55e]" : "bg-transparent opacity-0"
+            )} />
+            {props.children as React.ReactNode}
+          </>
+        )}
+      </RouterNavLink>
+    );
+  },
+);
+
+NavLink.displayName = "NavLink";
+
+export { NavLink };

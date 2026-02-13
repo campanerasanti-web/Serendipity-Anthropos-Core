@@ -1,0 +1,154 @@
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Progress } from '@/components/ui/progress';
+import { Card, CardContent } from '@/components/ui/card';
+import { Shield, AlertCircle, TrendingUp, Heart, Loader2 } from 'lucide-react';
+import { useCurrentMonthStats } from '@/hooks/useMonthlyStats';
+import { useInvoicesRealtime, useFixedCostsRealtime } from '@/hooks/useRealtimeSubscription';
+import { cn } from '@/lib/utils';
+
+export const SurvivalThermometer = () => {
+  const { t } = useTranslation();
+  const [progressAnimation, setProgressAnimation] = useState(0);
+
+  // Hook de React Query con caché automático
+  const {
+    data: stats,
+    isLoading,
+    error,
+    refetch,
+  } = useCurrentMonthStats();
+
+  // Suscribirse a cambios en tiempo real
+  // Automáticamente invalida el caché de React Query
+  useInvoicesRealtime();
+  useFixedCostsRealtime();
+
+  // Animar el progress bar suavemente
+  useEffect(() => {
+    if (stats && stats.progressPercent > 0) {
+      const animationTimer = setTimeout(() => {
+        setProgressAnimation(Math.min(stats.progressPercent, 100));
+      }, 100);
+      return () => clearTimeout(animationTimer);
+    }
+  }, [stats?.progressPercent]);
+
+  if (error) {
+    return (
+      <Card className='border-l-4 border-l-red-500 bg-red-50 dark:bg-red-950/20 backdrop-blur'>
+        <CardContent className='pt-6'>
+          <div className='flex items-center gap-3'>
+            <AlertCircle className='h-5 w-5 text-red-500 flex-shrink-0' />
+            <div>
+              <p className='font-medium text-red-900 dark:text-red-100'>
+                {t('errors.load_failed')}
+              </p>
+              <button
+                onClick={() => refetch()}
+                className='text-sm text-red-700 dark:text-red-300 underline mt-1'
+              >
+                {t('common.retry')}
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const breakEven = stats?.fixedCosts || 20000;
+  const progress = progressAnimation;
+  const status = progress >= 100 ? 'green' : progress >= 70 ? 'yellow' : 'red';
+
+  return (
+    <Card
+      className={cn(
+        'border-l-4 bg-card/50 backdrop-blur transition-all duration-500',
+        {
+          'border-l-green-500': status === 'green',
+          'border-l-yellow-500': status === 'yellow',
+          'border-l-red-500': status === 'red',
+        }
+      )}
+    >
+      <CardContent className='pt-6'>
+        {isLoading ? (
+          <div className='flex items-center justify-center h-20'>
+            <Loader2 className='h-6 w-6 animate-spin text-primary' />
+            <span className='ml-2 text-sm text-muted-foreground'>
+              {t('common.loading')}
+            </span>
+          </div>
+        ) : (
+          <>
+            <div className='flex justify-between items-end mb-4'>
+              <div>
+                <p className='text-sm font-medium text-muted-foreground uppercase tracking-wider'>
+                  {t('financials.survival_mode')}
+                </p>
+                <h2 className='text-3xl font-bold font-display'>
+                  ${stats?.totalRevenue?.toLocaleString() || '0'}{' '}
+                  <span className='text-lg text-muted-foreground font-normal'>
+                    / ${breakEven.toLocaleString()}
+                  </span>
+                </h2>
+              </div>
+              <div className='text-right'>
+                {progress >= 100 ? (
+                  <div className='flex items-center text-green-500 font-bold gap-2'>
+                    <Shield className='h-5 w-5' /> {t('financials.peace')}
+                  </div>
+                ) : progress >= 70 ? (
+                  <div className='flex items-center text-yellow-500 font-bold animate-pulse gap-2'>
+                    <AlertCircle className='h-5 w-5' /> {t('financials.working')}
+                  </div>
+                ) : (
+                  <div className='flex items-center text-red-500 font-bold animate-pulse gap-2'>
+                    <AlertCircle className='h-5 w-5' /> {t('financials.crisis')}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Progress Bar con animación suave */}
+            <Progress
+              value={progress}
+              className={cn('h-3 mb-2 transition-all duration-1000', {
+                '[&>div]:bg-green-500': status === 'green',
+                '[&>div]:bg-yellow-500': status === 'yellow',
+                '[&>div]:bg-red-500': status === 'red',
+              })}
+            />
+
+            <div className='grid grid-cols-2 gap-4 mt-6'>
+              {/* Net Flow */}
+              <div className='bg-primary/5 p-3 rounded-lg border border-primary/10 transition-all hover:border-primary/20'>
+                <p className='text-xs text-muted-foreground flex items-center mb-1'>
+                  <TrendingUp className='h-3 w-3 mr-1' /> {t('financials.net_flow')}
+                </p>
+                <p className='text-lg font-bold text-primary'>
+                  ${stats?.netFlow?.toLocaleString() || '0'}
+                </p>
+              </div>
+
+              {/* Peace Fund */}
+              <div className='bg-green-500/5 p-3 rounded-lg border border-green-500/10 transition-all hover:border-green-500/20'>
+                <p className='text-xs text-muted-foreground flex items-center mb-1'>
+                  <Heart className='h-3 w-3 mr-1' /> {t('financials.peace_fund')}
+                </p>
+                <p className='text-lg font-bold text-green-600'>
+                  ${stats?.peaceFund?.toLocaleString() || '0'}
+                </p>
+              </div>
+            </div>
+
+            <p className='mt-4 text-xs italic text-muted-foreground text-center'>
+              &quot;{t('financials.wisdom_msg')}&quot;
+            </p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+};

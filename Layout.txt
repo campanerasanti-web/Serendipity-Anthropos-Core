@@ -1,0 +1,130 @@
+import { ReactNode, useMemo } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import {
+  Factory, Ruler, BarChart3, FileText, LogOut,
+  LayoutDashboard, Building2, ShieldCheck, Sparkles, User
+} from "lucide-react";
+
+const navKeys = [
+  { path: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["ceo", "production", "measurement"] as const },
+  { path: "/production", key: "production", icon: Factory, roles: ["ceo", "production"] as const },
+  { path: "/measurement", key: "measurement", icon: Ruler, roles: ["ceo", "measurement"] as const },
+  { path: "/invoices", key: "invoices", icon: FileText, roles: ["ceo"] as const },
+  { path: "/financials", key: "financials", icon: BarChart3, roles: ["ceo"] as const },
+  { path: "/clients", key: "clients", icon: Building2, roles: ["ceo"] as const },
+];
+
+export default function AppLayout({ children }: { children: ReactNode }) {
+  const { user, roles, signOut, isCeo, firstName } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const visibleNav = useMemo(() => 
+    navKeys.filter((item) => isCeo || item.roles.some((r) => roles.includes(r as any))),
+    [isCeo, roles]
+  );
+
+  // Directriz del "Mediador" basada en el rol
+  const getDailyGuidance = () => {
+    if (isCeo) return "Administra con sabiduría; el Padre provee.";
+    if (roles.includes("production" as any)) return "Maestría en cada piel; calidad es paz.";
+    return "Precisión en la medida; justicia en el dato.";
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
+  return (
+    <div className="dark min-h-screen flex bg-[#0a0a0b] text-slate-200">
+      <aside className="w-72 bg-card/30 backdrop-blur-xl border-r border-white/5 flex flex-col shadow-2xl">
+        {/* Logo & Brand */}
+        <div className="p-8 border-b border-white/5">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-primary/20 p-2 rounded-lg border border-primary/30">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+            </div>
+            <h1 className="text-xl font-display font-black tracking-tighter text-white">
+              SERENDIPITY<span className="text-primary/80 font-light">BROS</span>
+            </h1>
+          </div>
+          <p className="text-[9px] text-muted-foreground tracking-[0.3em] uppercase font-medium">
+            {t("nav.erpSystem")}
+          </p>
+        </div>
+
+        {/* User Context & Guidance */}
+        <div className="px-6 py-4">
+          <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+             <div className="flex items-center gap-3 mb-2">
+               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                 <User className="h-4 w-4 text-primary" />
+               </div>
+               <div className="flex-1 overflow-hidden">
+                 <p className="text-sm font-bold truncate">Santi @ Serendipity</p>
+                 <p className="text-[10px] text-primary uppercase font-bold tracking-widest">{roles[0]}</p>
+               </div>
+             </div>
+             <p className="text-[11px] italic text-muted-foreground leading-relaxed border-t border-white/5 pt-2 mt-2">
+               "{getDailyGuidance()}"
+             </p>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+          {visibleNav.map((item) => {
+            const Icon = item.icon;
+            const active = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-300 group ${
+                  active
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 font-bold scale-[1.02]"
+                    : "text-muted-foreground hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <Icon className={`h-4 w-4 ${active ? "animate-pulse" : "group-hover:text-primary transition-colors"}`} />
+                {t(`nav.${item.key}`)}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Footer Actions */}
+        <div className="p-6 border-t border-white/5 space-y-4">
+          <div className="bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-xl border border-primary/10">
+            <LanguageSwitcher />
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all" 
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 mr-3" />
+            {t("nav.signOut")}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 relative overflow-hidden flex flex-col">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
+        
+        <div className="flex-1 overflow-auto relative p-8 md:p-12">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}

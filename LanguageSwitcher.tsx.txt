@@ -1,0 +1,45 @@
+import { useTranslation } from "react-i18next";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Globe } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const languages = [
+  { code: "es", label: "Español", flag: "🇪🇸" },
+  { code: "en", label: "English", flag: "🇺🇸" },
+  { code: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
+];
+
+export default function LanguageSwitcher({ className }: { className?: string }) {
+  const { i18n } = useTranslation();
+
+  const change = (lng: string) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem("lang", lng);
+    // Opcional: Recargar sutilmente si hay lógicas de IA que dependan del idioma en el servidor
+    // window.location.reload(); 
+  };
+
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      <Select value={i18n.language} onValueChange={change}>
+        <SelectTrigger className="h-9 w-full bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/50 transition-all text-[11px] font-medium uppercase tracking-widest text-slate-300">
+          <div className="flex items-center gap-2">
+            <Globe className="h-3.5 w-3.5 text-primary/70" />
+            <SelectValue placeholder="Language" />
+          </div>
+        </SelectTrigger>
+        <SelectContent className="bg-[#0d0d0e] border-white/10">
+          {languages.map((l) => (
+            <SelectItem 
+              key={l.code} 
+              value={l.code}
+              className="text-xs focus:bg-primary/20 focus:text-primary transition-colors cursor-pointer"
+            >
+              <span className="mr-2">{l.flag}</span> {l.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}

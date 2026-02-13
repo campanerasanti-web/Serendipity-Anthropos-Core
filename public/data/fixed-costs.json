@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T00:00:00Z",
+  "costosFijos": [
+    {
+      "id": "RENT-2026-02",
+      "categoria": "Alquiler",
+      "concepto": "Renta fábrica mensual",
+      "monto": 45000000,
+      "moneda": "VND",
+      "frecuencia": "mensual",
+      "fechaPago": "2026-02-01",
+      "proveedor": "Propietario Fábrica",
+      "estado": "pagado"
+    },
+    {
+      "id": "ELEC-2026-02",
+      "categoria": "Electricidad",
+      "concepto": "Consumo eléctrico fábrica",
+      "monto": 28000000,
+      "moneda": "VND",
+      "frecuencia": "mensual",
+      "fechaPago": "2026-02-05",
+      "proveedor": "EVN (Electricity Vietnam)",
+      "estado": "pagado"
+    },
+    {
+      "id": "WATER-2026-02",
+      "categoria": "Agua",
+      "concepto": "Consumo agua industrial",
+      "monto": 3500000,
+      "moneda": "VND",
+      "frecuencia": "mensual",
+      "fechaPago": "2026-02-05",
+      "proveedor": "Servicio Municipal",
+      "estado": "pagado"
+    },
+    {
+      "id": "INET-2026-02",
+      "categoria": "Internet/Telefonía",
+      "concepto": "Servicio internet + teléfonos",
+      "monto": 800000,
+      "moneda": "VND",
+      "frecuencia": "mensual",
+      "fechaPago": "2026-02-10",
+      "proveedor": "Viettel",
+      "estado": "pagado"
+    },
+    {
+      "id": "INS-2026-02",
+      "categoria": "Seguros",
+      "concepto": "Seguro fábrica + maquinaria",
+      "monto": 12000000,
+      "moneda": "VND",
+      "frecuencia": "mensual",
+      "fechaPago": "2026-02-15",
+      "proveedor": "Bảo Việt Insurance",
+      "estado": "pendiente"
+    },
+    {
+      "id": "MAINT-2026-02",
+      "categoria": "Mantenimiento",
+      "concepto": "Mantenimiento preventivo máquinas",
+      "monto": 8500000,
+      "moneda": "VND",
+      "frecuencia": "mensual",
+      "fechaPago": "2026-02-20",
+      "proveedor": "Técnicos certificados",
+      "estado": "pendiente"
+    }
+  ],
+  "resumen": {
+    "totalMensual": 97800000,
+    "pagadoHastaAhora": 77300000,
+    "pendienteMes": 20500000,
+    "porCategoria": {
+      "Alquiler": 45000000,
+      "Electricidad": 28000000,
+      "Agua": 3500000,
+      "Internet/Telefonía": 800000,
+      "Seguros": 12000000,
+      "Mantenimiento": 8500000
+    },
+    "proyeccionAnual": 1173600000
+  }
+}

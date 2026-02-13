@@ -1,0 +1,337 @@
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import {
+  Zap,
+  TrendingUp,
+  Gauge,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  Flame,
+} from 'lucide-react';
+import { useCurrentMonthStats } from '@/hooks/useMonthlyStats';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useInvoicesRealtime, useFixedCostsRealtime } from '@/hooks/useRealtimeSubscription';
+
+interface CashFlowPrediction {
+  projectedRevenue: number;
+  confidence: number;
+  recommendation: string;
+  emoji: string;
+  daysToCrisis: number;
+}
+
+export const UnifiedCommandCenter = () => {
+  const { t } = useTranslation();
+  const now = new Date();
+
+  // Cargar stats del mes actual con caché
+  const { data: currentStats, isLoading: statsLoading } = useCurrentMonthStats();
+
+  // Cargar predicción para el próximo mes
+  const nextMonth = now.getMonth() + 2;
+  const nextYear = nextMonth > 12 ? now.getFullYear() + 1 : now.getFullYear();
+  const { data: prediction, isLoading: predictionLoading } = useQuery({
+    queryKey: ['cashflow-prediction', nextMonth, nextYear],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('predict_monthly_cashflow', {
+        p_month: nextMonth > 12 ? nextMonth - 12 : nextMonth,
+        p_year: nextYear,
+      });
+      if (error) throw error;
+      return data?.[0] as CashFlowPrediction | undefined;
+    },
+    staleTime: 60 * 60 * 1000, // 1 hora
+  });
+
+  // Suscribirse a cambios en tiempo real
+  useInvoicesRealtime();
+  useFixedCostsRealtime();
+
+  const isLoading = statsLoading || predictionLoading;
+
+  if (isLoading) {
+    return (
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className='animate-pulse'>
+            <CardContent className='pt-6'>
+              <div className='h-20 bg-muted rounded-lg' />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className='space-y-6'>
+      {/* Sección 1: Métricas Principales */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+        {/* Revenue Card */}
+        <Card className='border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/20 dark:to-transparent'>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium text-muted-foreground flex items-center gap-2'>
+              <Zap className='h-4 w-4 text-blue-500' />
+              {t('financials.revenue')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className='text-3xl font-bold'>
+              ${currentStats?.totalRevenue?.toLocaleString() || '0'}
+            </p>
+            <p className='text-xs text-muted-foreground mt-1'>
+              {t('financials.current_month')}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Breakeven Card */}
+        <Card className='border-l-4 border-l-yellow-500 bg-gradient-to-br from-yellow-50 to-transparent dark:from-yellow-950/20 dark:to-transparent'>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium text-muted-foreground flex items-center gap-2'>
+              <Gauge className='h-4 w-4 text-yellow-500' />
+              {t('financials.breakeven')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className='text-3xl font-bold'>
+              ${currentStats?.fixedCosts?.toLocaleString() || '0'}
+            </p>
+            <p className='text-xs text-muted-foreground mt-1'>
+              {t('financials.fixed_costs')}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Surplus Card */}
+        <Card className='border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-transparent dark:from-green-950/20 dark:to-transparent'>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium text-muted-foreground flex items-center gap-2'>
+              <TrendingUp className='h-4 w-4 text-green-500' />
+              {t('financials.surplus')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className='text-3xl font-bold text-green-600'>
+              ${currentStats?.netFlow?.toLocaleString() || '0'}
+            </p>
+            <p className='text-xs text-muted-foreground mt-1'>
+              {t('financials.excess')}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Peace Fund Card */}
+        <Card className='border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-950/20 dark:to-transparent'>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium text-muted-foreground flex items-center gap-2'>
+              <CheckCircle2 className='h-4 w-4 text-purple-500' />
+              {t('financials.peace_fund')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className='text-3xl font-bold text-purple-600'>
+              ${currentStats?.peaceFund?.toLocaleString() || '0'}
+            </p>
+            <p className='text-xs text-muted-foreground mt-1'>
+              10% {t('financials.reserved')}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sección 2: Progreso del Mes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className='flex items-center justify-between'>
+            <span>{t('financials.month_progress')}</span>
+            <span className='text-2xl font-bold text-primary'>
+              {currentStats?.progressPercent?.toFixed(1) || '0'}%
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Progress value={currentStats?.progressPercent || 0} className='h-4' />
+          <p className='text-xs text-muted-foreground mt-3'>
+            {currentStats?.progressPercent && currentStats.progressPercent >= 100
+              ? t('financials.peace_achieved')
+              : t('financials.keep_working')}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Sección 3: Predicción para el Próximo Mes */}
+      {prediction && (
+        <Card className='border-2 border-indigo-300 dark:border-indigo-700'>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2'>
+              <span className='text-2xl'>{prediction.emoji}</span>
+              Proyección - Próximo Mes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <p className='text-sm text-muted-foreground mb-1'>
+                  {t('financials.projected_revenue')}
+                </p>
+                <p className='text-2xl font-bold'>
+                  ${prediction.projectedRevenue?.toLocaleString() || '0'}
+                </p>
+              </div>
+              <div>
+                <p className='text-sm text-muted-foreground mb-1'>Confianza de Predicción</p>
+                <p className='text-2xl font-bold text-indigo-600'>
+                  {prediction.confidence?.toFixed(1) || '0'}%
+                </p>
+              </div>
+            </div>
+
+            {/* Recommendation */}
+            <div className='bg-indigo-50 dark:bg-indigo-950/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800'>
+              <p className='text-sm text-indigo-900 dark:text-indigo-200'>
+                <strong>Recomendación:</strong> {prediction.recommendation}
+              </p>
+            </div>
+
+            {/* Crisis Warning */}
+            {prediction.daysToCrisis && prediction.daysToCrisis < 30 && (
+              <div className='bg-red-50 dark:bg-red-950/20 p-3 rounded-lg border border-red-200 dark:border-red-800 flex items-start gap-3'>
+                <Flame className='h-5 w-5 text-red-500 flex-shrink-0 mt-0.5' />
+                <div>
+                  <p className='text-sm font-bold text-red-900 dark:text-red-200'>
+                    Alerta: Crisis en {prediction.daysToCrisis} días
+                  </p>
+                  <p className='text-xs text-red-700 dark:text-red-300 mt-1'>
+                    Si mantienen el ritmo actual sin cambios, podrían entrar en crisis
+                    fiscal en {prediction.daysToCrisis} días.
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export const UnifiedCommandCenter = () => {
+  const { t } = useTranslation();
+  const [metrics, setMetrics] = useState({
+    invoiced: 0,
+    costs: 0,
+    survivalGoal: 20000, // Punto Cero (Base)
+    reserveFund: 0,
+    isSafe: false
+  });
+
+  useEffect(() => {
+    const loadZenMetrics = async () => {
+      // 1. Obtener Facturación del Mes Actual
+      const { data: inv } = await supabase.from("invoices").select("total_amount");
+      const totalInvoiced = inv?.reduce((acc, curr) => acc + curr.total_amount, 0) || 0;
+
+      // 2. Obtener Costos Fijos (La Carga del Pasado)
+      const { data: costs } = await supabase.from("fixed_costs").select("*").maybeSingle();
+      const totalCosts = (costs?.payroll || 0) + (costs?.rent || 0) + (costs?.evn || 0);
+
+      // 3. Lógica del "Fondo de Paz" (Reserva del 5% sobre el excedente)
+      const surplus = totalInvoiced > totalCosts ? totalInvoiced - totalCosts : 0;
+      const reserve = surplus * 0.05;
+
+      setMetrics({
+        invoiced: totalInvoiced,
+        costs: totalCosts || 20000,
+        survivalGoal: totalCosts || 20000,
+        reserveFund: reserve,
+        isSafe: totalInvoiced >= totalCosts
+      });
+    };
+
+    loadZenMetrics();
+  }, []);
+
+  const progress = Math.min((metrics.invoiced / metrics.survivalGoal) * 100, 100);
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-700">
+      {/* 1. Alerta de Estado de Gracia */}
+      {!metrics.isSafe ? (
+        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 backdrop-blur-md">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle className="font-display font-bold">{t("publicDashboard.survivalAlert")}</AlertTitle>
+          <AlertDescription>{t("publicDashboard.survivalAlertDesc")}</AlertDescription>
+        </Alert>
+      ) : (
+        <Alert className="bg-green-500/10 border-green-500/20 text-green-500 backdrop-blur-md">
+          <ShieldCheck className="h-5 w-5" />
+          <AlertTitle className="font-display font-bold">{t("publicDashboard.celebration")}</AlertTitle>
+          <AlertDescription>{t("publicDashboard.celebrationText")}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 2. El Termómetro de Supervivencia */}
+        <Card className="md:col-span-2 border-white/5 bg-card/50 backdrop-blur-lg overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+             <TrendingUp size={120} />
+          </div>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Heart className="h-4 w-4 text-primary" />
+              {t("publicDashboard.thermometer")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-end mb-4">
+              <h2 className="text-4xl font-black font-display text-white">
+                ${metrics.invoiced.toLocaleString()} 
+                <span className="text-xl text-muted-foreground font-light block md:inline md:ml-2">
+                  / ${metrics.survivalGoal.toLocaleString()}
+                </span>
+              </h2>
+              <p className="text-xs font-bold text-primary animate-pulse uppercase tracking-tighter">
+                {progress.toFixed(1)}% {t("publicDashboard.momentum")}
+              </p>
+            </div>
+            <Progress value={progress} className="h-4 bg-white/5" />
+            <p className="mt-4 text-[11px] italic text-muted-foreground text-center">
+              {t("publicDashboard.alcanciaQuote")}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 3. La Alcancía de Sofía (Heo Đất) */}
+        <Card className="border-primary/20 bg-primary/5 backdrop-blur-lg flex flex-col justify-center items-center p-6 text-center group">
+          <div className="bg-primary/20 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform duration-500">
+            <PiggyBank className="h-10 w-10 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-1">{t("dashboard.alcancia")}</h3>
+          <p className="text-[10px] text-muted-foreground leading-tight mb-4 px-4">
+            {t("dashboard.alcanciaGrowing")}
+          </p>
+          <div className="text-3xl font-black text-primary">
+            ${metrics.reserveFund.toLocaleString()}
+          </div>
+          <span className="text-[9px] uppercase tracking-[0.2em] mt-2 text-primary/60 font-bold">
+            {t("publicDashboard.readyToInvoice")}
+          </span>
+        </Card>
+      </div>
+
+      {/* 4. El Manifiesto Visual */}
+      <footer className="pt-8 border-t border-white/5 text-center">
+        <p className="text-xs text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          {t("publicDashboard.manifesto2")}
+        </p>
+        <p className="text-[10px] mt-4 uppercase tracking-widest opacity-30">
+          {t("publicDashboard.footer")}
+        </p>
+      </footer>
+    </div>
+  );
+};

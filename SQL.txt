@@ -1,0 +1,17 @@
+-- 1. Activar RLS en la tabla crítica
+ALTER TABLE public.monthly_progress ENABLE ROW LEVEL SECURITY;
+
+-- 2. Permiso total solo para el CEO (Tú)
+CREATE POLICY "CEO manage all progress"
+  ON public.monthly_progress FOR ALL
+  TO authenticated
+  USING (has_role(auth.uid(), 'ceo'::app_role));
+
+-- 3. Permiso de lectura para el equipo (Paz informativa)
+CREATE POLICY "Staff read progress"
+  ON public.monthly_progress FOR SELECT
+  TO authenticated
+  USING (
+    has_role(auth.uid(), 'production'::app_role) OR 
+    has_role(auth.uid(), 'measurement'::app_role)
+  );

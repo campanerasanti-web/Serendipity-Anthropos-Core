@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-02-13T00:00:00Z",
+  "mesActual": "Febrero 2026",
+  "totalMonthlyRevenue": 1423750000,
+  "totalMonthlyExpenses": 290000000,
+  "grossMargin": 1133750000,
+  "grossMarginPercentage": 79.63,
+  "payroll": 140400000,
+  "payrollPercentage": 9.86,
+  "praraRevenue": 1163750000,
+  "praraPercentage": 81.74,
+  "customerCount": 5,
+  "activeOrdersMonth": 72,
+  "errorRate": 8.0,
+  "onTimeDeliveryRate": 88.0,
+  "employeeCount": 22,
+  "clientes": [
+    {"nombre": "PRARA", "revenue": 1163750000, "porcentaje": 81.74},
+    {"nombre": "SUPREME", "revenue": 130000000, "porcentaje": 9.13},
+    {"nombre": "FARIDA", "revenue": 65000000, "porcentaje": 4.56},
+    {"nombre": "DONTO", "revenue": 40000000, "porcentaje": 2.81},
+    {"nombre": "OTROS", "revenue": 25000000, "porcentaje": 1.76}
+  ],
+  "costosFijos": {
+    "alquiler": 45000000,
+    "electricidad": 28000000,
+    "agua": 3500000,
+    "internet": 800000,
+    "seguros": 12000000,
+    "mantenimiento": 8500000,
+    "total": 97800000
+  },
+  "metricas": {
+    "margenBrutoUSD": 16195.89,
+    "ventasPorEmpleado": 64715909,
+    "costosFixosPorEmpleado": 4445455
+  }
+}

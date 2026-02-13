@@ -1,0 +1,133 @@
+import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Camera, FileUp, Zap, CheckCircle2, AlertCircle, Image as ImageIcon, CreditCard, Banknote } from "lucide-react";
+import { toast } from "sonner";
+
+export const UniversalCaptureAgent = () => {
+  const { t } = useTranslation();
+  const [fileStatus, setFileStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [inputType, setInputType] = useState<'expense' | 'income'>('expense');
+  const [previewData, setPreviewData] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Indicadores de Luces "One Touch"
+  const LightIndicator = ({ status }: { status: 'idle' | 'success' | 'error' }) => (
+    <div className="flex items-center gap-2 mb-4">
+      <div className={`h-4 w-4 rounded-full blur-[2px] transition-all duration-500 ${
+        status === 'success' ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 
+        status === 'error' ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : 
+        'bg-slate-700'
+      }`} />
+      <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+        {status === 'success' ? 'Sistema Conectado' : status === 'error' ? 'Error de Lectura' : 'Esperando Entrada'}
+      </span>
+    </div>
+  );
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileStatus('idle');
+    toast.info("IA Analizando formato... " + file.name);
+
+    // Simulación de análisis de la IA (Adaptabilidad Universal)
+    setTimeout(() => {
+      // Aquí iría la lógica de OCR o procesamiento de Excel/CSV
+      const mockParsedData = {
+        type: file.type.includes('image') ? 'Comprobante Físico' : 'Documento Digital',
+        category: 'Operativo',
+        amount: 4500000,
+        currency: 'VND',
+        suggestion: "Detectado: Pago EVN (Electricidad). ¿Confirmar ingreso?"
+      };
+      
+      setPreviewData(mockParsedData);
+      setFileStatus('success');
+    }, 1500);
+  };
+
+  return (
+    <Card className="border-white/5 bg-[#0d0d0e]/80 backdrop-blur-xl">
+      <CardContent className="p-6">
+        <LightIndicator status={fileStatus} />
+        
+        <div className="flex gap-4 mb-6">
+          <Button 
+            variant={inputType === 'expense' ? 'default' : 'outline'}
+            onClick={() => setInputType('expense')}
+            className="flex-1 h-12 text-xs uppercase tracking-tighter"
+          >
+            <CreditCard className="mr-2 h-4 w-4" /> Gasto Operativo
+          </Button>
+          <Button 
+            variant={inputType === 'income' ? 'default' : 'outline'}
+            onClick={() => setInputType('income')}
+            className="flex-1 h-12 text-xs uppercase tracking-tighter"
+          >
+            <Banknote className="mr-2 h-4 w-4" /> Ingreso (Transfer/Cash)
+          </Button>
+        </div>
+
+        {/* Zona de Carga Universal */}
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className="group relative border-2 border-dashed border-white/10 rounded-2xl p-10 text-center hover:border-primary/50 transition-all cursor-pointer bg-white/[0.02]"
+        >
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            className="hidden" 
+            accept="image/*,.pdf,.csv,.xlsx" 
+          />
+          
+          <div className="flex flex-col items-center">
+            <div className="p-4 rounded-full bg-primary/10 mb-4 group-hover:scale-110 transition-transform">
+              {inputType === 'expense' ? <FileUp className="h-8 w-8 text-primary" /> : <Camera className="h-8 w-8 text-primary" />}
+            </div>
+            <h3 className="text-sm font-bold text-white mb-1">Carga de Evidencia Digital o Física</h3>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+              PDF, EXCEL, CSV O FOTO DEL COMPROBANTE
+            </p>
+          </div>
+        </div>
+
+        {/* Panel de Inteligencia Asistente (Reporte Pre-Ingreso) */}
+        {previewData && (
+          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 animate-in slide-in-from-bottom-2">
+            <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+              <Zap className="h-4 w-4 text-yellow-500" />
+              <span className="text-xs font-bold uppercase tracking-widest">Análisis de la IA</span>
+            </div>
+            
+            <div className="space-y-3">
+              <p className="text-sm text-slate-300">{previewData.suggestion}</p>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <Badge variant="outline" className="justify-center py-1 bg-black/40">{previewData.type}</Badge>
+                <Badge variant="outline" className="justify-center py-1 bg-black/40 text-primary border-primary/30">
+                  {previewData.amount.toLocaleString()} {previewData.currency}
+                </Badge>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button className="flex-1 bg-green-600 hover:bg-green-700 text-[10px] h-8 uppercase font-bold">
+                  <CheckCircle2 className="mr-2 h-3 w-3" /> Confirmar e Ingresar
+                </Button>
+                <Button variant="ghost" className="flex-1 text-destructive hover:bg-destructive/10 text-[10px] h-8 uppercase font-bold" onClick={() => setPreviewData(null)}>
+                  <AlertCircle className="mr-2 h-3 w-3" /> Corregir
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};

@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "ultimaActualizacion": "2026-02-13T00:00:00Z",
+  "modelosActivos": {
+    "proyeccionVentas": {
+      "algoritmo": "regresion-lineal-con-estacionalidad",
+      "precision": 0.0,
+      "datosEntrenamiento": 1,
+      "ultimoEntrenamiento": "2026-02-13T00:00:00Z"
+    },
+    "deteccionAnomalias": {
+      "algoritmo": "desviacion-estandar-adaptativa",
+      "precision": 0.0,
+      "umbralAlerta": 2.5
+    }
+  },
+  "metricas": {
+    "diasConDatos": 1,
+    "diasRequeridosMinimo": 7,
+    "estadoAprendizaje": "inicializando"
+  }
+}

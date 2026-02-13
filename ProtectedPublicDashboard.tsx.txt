@@ -1,0 +1,109 @@
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { UnifiedCommandCenter } from "@/components/UnifiedCommandCenter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ShieldCheck, Lock, Factory } from "lucide-react";
+import { toast } from "sonner";
+
+export default function ProtectedPublicDashboard() {
+  const { t } = useTranslation();
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    // Verificar sesión al cargar
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handlePlantLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+      toast.error("Acceso denegado: Verifica las credenciales de planta.");
+      setLoading(false);
+    } else {
+      toast.success("Conexión establecida con el Ecosistema");
+    }
+  };
+
+  if (loading) return <div className="h-screen flex items-center justify-center bg-[#0a0a0b] text-primary animate-pulse font-display italic">SERENDIPITY...</div>;
+
+  // ESTADO 1: ACCESO RESTRINGIDO (Login de Planta)
+  if (!session) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#0a0a0b] p-4">
+        <div className="max-w-md w-full space-y-8 bg-card/30 p-8 rounded-3xl border border-white/5 backdrop-blur-xl">
+          <div className="text-center">
+            <div className="mx-auto h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 border border-primary/20">
+              <Lock className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-black tracking-tighter text-white font-display">ENTRADA A LA PLANTA</h2>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] mt-2">
+              Lá Chắn Chất Lượng — Sistema de Seguridad
+            </p>
+          </div>
+
+          <form onSubmit={handlePlantLogin} className="space-y-4">
+            <Input 
+              type="email" 
+              placeholder="Email de Planta (ej: planta@serendipity.com)" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-white/5 border-white/10 h-12"
+            />
+            <Input 
+              type="password" 
+              placeholder="Contraseña Maestra" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-white/5 border-white/10 h-12"
+            />
+            <Button type="submit" className="w-full h-12 bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest text-[11px]">
+              <Factory className="mr-2 h-4 w-4" /> Activar Espejo Brillante
+            </Button>
+          </form>
+          
+          <p className="text-[9px] text-center text-muted-foreground italic">
+            "Para crecer como un Bosque Consciente, cada acceso debe ser íntegro."
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ESTADO 2: DASHBOARD ACTIVO (Gương Sáng)
+  return (
+    <div className="min-h-screen bg-[#0a0a0b] p-6 md:p-12">
+      <header className="flex justify-between items-center mb-12 border-b border-white/5 pb-6">
+        <div>
+          <h1 className="text-2xl font-black text-white font-display flex items-center gap-3">
+            <ShieldCheck className="text-primary h-6 w-6" />
+            GƯƠNG SÁNG — {t("publicDashboard.subtitle")}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">Conectado como: {session.user.email}</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()} className="text-muted-foreground hover:text-destructive">
+          Cerrar Sesión
+        </Button>
+      </header>
+
+      {/* Aquí inyectamos el Centro de Comando que ya tiene el Termómetro y el Fondo de Paz */}
+      <UnifiedCommandCenter />
+    </div>
+  );
+}

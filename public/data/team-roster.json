@@ -1,0 +1,196 @@
+{
+  "timestamp": "2026-02-13T00:00:00Z",
+  "totalMiembros": 22,
+  "equipos": [
+    {
+      "nombre": "NGUYỄN QUỐC VŨ",
+      "rol": "Director",
+      "salarioMensual": 20000000,
+      "tier": "Leadership",
+      "contribucionValor": 20,
+      "equityScore": 95.0
+    },
+    {
+      "nombre": "NGUYỄN THỊ HUẾ",
+      "rol": "Administration (Manager)",
+      "salarioMensual": 9000000,
+      "tier": "Management",
+      "contribucionValor": 15,
+      "equityScore": 88.0
+    },
+    {
+      "nombre": "LÊ THỊ HỒNG HẠ",
+      "rol": "Spray machine",
+      "salarioMensual": 7000000,
+      "tier": "Skilled",
+      "contribucionValor": 12,
+      "equityScore": 82.0
+    },
+    {
+      "nombre": "PHẠM THỊ BÍCH TRÂM",
+      "rol": "Spray machine",
+      "salarioMensual": 7000000,
+      "tier": "Skilled",
+      "contribucionValor": 12,
+      "equityScore": 82.0
+    },
+    {
+      "nombre": "TRẦN VĂN NAM",
+      "rol": "Spray machine",
+      "salarioMensual": 7000000,
+      "tier": "Skilled",
+      "contribucionValor": 12,
+      "equityScore": 82.0
+    },
+    {
+      "nombre": "VÕ THỊ DIỄM",
+      "rol": "Spray machine",
+      "salarioMensual": 7000000,
+      "tier": "Skilled",
+      "contribucionValor": 12,
+      "equityScore": 82.0
+    },
+    {
+      "nombre": "HOÀNG VĂN TÍNH",
+      "rol": "Emboss machine",
+      "salarioMensual": 6500000,
+      "tier": "Skilled",
+      "contribucionValor": 10,
+      "equityScore": 78.0
+    },
+    {
+      "nombre": "ĐẶNG THỊ MAI",
+      "rol": "Emboss machine",
+      "salarioMensual": 6500000,
+      "tier": "Skilled",
+      "contribucionValor": 10,
+      "equityScore": 78.0
+    },
+    {
+      "nombre": "LÝ VĂN PHÚC",
+      "rol": "Emboss machine",
+      "salarioMensual": 6500000,
+      "tier": "Skilled",
+      "contribucionValor": 10,
+      "equityScore": 78.0
+    },
+    {
+      "nombre": "PHAN THỊ KIM ANH",
+      "rol": "Maintenance",
+      "salarioMensual": 6200000,
+      "tier": "Technical",
+      "contribucionValor": 9,
+      "equityScore": 75.0
+    },
+    {
+      "nombre": "BÙI VĂN ĐÔNG",
+      "rol": "Maintenance",
+      "salarioMensual": 6200000,
+      "tier": "Technical",
+      "contribucionValor": 9,
+      "equityScore": 75.0
+    },
+    {
+      "nombre": "NGUYỄN THỊ LAN",
+      "rol": "Packing",
+      "salarioMensual": 5800000,
+      "tier": "Operations",
+      "contribucionValor": 8,
+      "equityScore": 70.0
+    },
+    {
+      "nombre": "TRẦN VĂN HÙNG",
+      "rol": "Packing",
+      "salarioMensual": 5800000,
+      "tier": "Operations",
+      "contribucionValor": 8,
+      "equityScore": 70.0
+    },
+    {
+      "nombre": "LÊ THỊ THU",
+      "rol": "Buffing Machine",
+      "salarioMensual": 5800000,
+      "tier": "Operations",
+      "contribucionValor": 8,
+      "equityScore": 70.0
+    },
+    {
+      "nombre": "VŨ VĂN LONG",
+      "rol": "Buffing Machine",
+      "salarioMensual": 5800000,
+      "tier": "Operations",
+      "contribucionValor": 8,
+      "equityScore": 70.0
+    },
+    {
+      "nombre": "ĐOÀN THỊ HƯƠNG",
+      "rol": "QC/QA",
+      "salarioMensual": 6000000,
+      "tier": "Quality",
+      "contribucionValor": 9,
+      "equityScore": 73.0
+    },
+    {
+      "nombre": "TRƯƠNG VĂN MINH",
+      "rol": "Logistics",
+      "salarioMensual": 5500000,
+      "tier": "Operations",
+      "contribucionValor": 7,
+      "equityScore": 68.0
+    },
+    {
+      "nombre": "PHẠM THỊ NGỌC",
+      "rol": "Químicos/Inventory",
+      "salarioMensual": 5500000,
+      "tier": "Operations",
+      "contribucionValor": 7,
+      "equityScore": 68.0
+    },
+    {
+      "nombre": "LÊ VĂN THÀNH",
+      "rol": "Production Support",
+      "salarioMensual": 5200000,
+      "tier": "Operations",
+      "contribucionValor": 6,
+      "equityScore": 65.0
+    },
+    {
+      "nombre": "NGUYỄN THỊ HẠNH",
+      "rol": "Production Support",
+      "salarioMensual": 5200000,
+      "tier": "Operations",
+      "contribucionValor": 6,
+      "equityScore": 65.0
+    },
+    {
+      "nombre": "HOÀNG VĂN ĐỨC",
+      "rol": "Cleaner",
+      "salarioMensual": 4800000,
+      "tier": "Support",
+      "contribucionValor": 5,
+      "equityScore": 60.0
+    },
+    {
+      "nombre": "TRẦN THỊ THANH",
+      "rol": "Cleaner",
+      "salarioMensual": 4800000,
+      "tier": "Support",
+      "contribucionValor": 5,
+      "equityScore": 60.0
+    }
+  ],
+  "resumen": {
+    "totalSalarios": 140400000,
+    "salarioPromedio": 6381818,
+    "rolesUnicos": 13,
+    "distribucionPorTier": {
+      "Leadership": 1,
+      "Management": 1,
+      "Skilled": 7,
+      "Technical": 2,
+      "Quality": 1,
+      "Operations": 8,
+      "Support": 2
+    }
+  }
+}

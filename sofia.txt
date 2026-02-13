@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serendipity Bros - Convergence Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #22c55e;
+            --bg: #0a0a0b;
+        }
+        body {
+            background-color: var(--bg);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .font-display { font-family: 'Space+Grotesk', sans-serif; }
+        .glow-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
+        .glow-red { box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        .status-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+        }
+        .status-ready { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+        .status-idle { background: #334155; }
+        .status-error { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-soft { animation: pulse-soft 2s infinite; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- SECCIÓN IZQUIERDA: ENTRADA DE PLANTA (VIETNAM) -->
+        <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                <div>
+                    <h2 class="text-xs uppercase tracking-[0.3em] text-primary font-bold">Trạm Nhập Liệu</h2>
+                    <h1 class="font-display text-2xl font-black text-white">ENTRADA DE PLANTA (VN)</h1>
+                </div>
+                <div id="plant-status" class="status-light status-ready"></div>
+            </div>
+
+            <div class="glass rounded-3xl p-6 space-y-4">
+                <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Dán văn bản hoặc hóa đơn tại đây</label>
+                <textarea id="vn-input" class="w-full h-48 bg-black/40 border border-white/10 rounded-2xl p-4 font-mono text-sm focus:border-primary/50 outline-none transition-all" placeholder="Ví dụ: Hóa đơn tiền điện tháng 2: 4.500.000 VND..."></textarea>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="simulateProcess()" class="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all">
+                        Xử lý AI (Procesar)
+                    </button>
+                    <button onclick="clearInput()" class="bg-white/5 hover:bg-white/10 text-slate-400 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all">
+                        Xóa (Limpiar)
+                    </button>
+                </div>
+                
+                <p class="text-[9px] text-slate-600 italic">Hệ thống đang sử dụng Lá Chắn Chất Lượng v2.5</p>
+            </div>
+
+            <div class="glass rounded-3xl p-6">
+                <h3 class="text-xs font-bold mb-4 uppercase tracking-widest">Ejemplos Rápidos:</h3>
+                <div class="space-y-2">
+                    <button onclick="setExample('PO')" class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs border border-white/5">📄 PO: 500sqft Cuero Cowhide - $12,500</button>
+                    <button onclick="setExample('Electricidad')" class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs border border-white/5">⚡ EVN: Tiền điện tháng này là 8.250.000 VND</button>
+                    <button onclick="setExample('Gasto')" class="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs border border-white/5">🛠 Mua phụ tùng máy móc: 1.200.000 VND</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DERECHA: DASHBOARD CEO (ESPAÑOL) -->
+        <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                <div>
+                    <h2 class="text-xs uppercase tracking-[0.3em] text-blue-400 font-bold">Centro de Comando</h2>
+                    <h1 class="font-display text-2xl font-black text-white">DASHBOARD CEO (ES)</h1>
+                </div>
+                <div id="ceo-status" class="status-light status-idle"></div>
+            </div>
+
+            <!-- TERMINAL DE LA IA -->
+            <div class="glass rounded-3xl p-6 min-h-[400px] flex flex-col">
+                <div class="flex items-center gap-2 mb-6">
+                    <div class="h-2 w-2 rounded-full bg-blue-500 animate-pulse-soft"></div>
+                    <span id="ai-status-text" class="text-[10px] uppercase tracking-widest text-slate-400">Esperando señal de planta...</span>
+                </div>
+
+                <div id="ai-output" class="flex-1 flex flex-col justify-center items-center text-center space-y-6">
+                    <div class="opacity-20">
+                        <svg class="w-24 h-24 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <p class="text-sm text-slate-500 max-w-[250px]">El Bibliotecario está listo para traducir la realidad de la planta a tu tablero financiero.</p>
+                </div>
+            </div>
+
+            <!-- RESUMEN DE IMPACTO (PUNTO CERO) -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass rounded-3xl p-6">
+                    <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Impacto Ingreso</p>
+                    <h4 id="impact-income" class="text-xl font-display font-bold text-white">$0.00</h4>
+                </div>
+                <div class="glass rounded-3xl p-6">
+                    <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Fondo de Paz (5%)</p>
+                    <h4 id="impact-peace" class="text-xl font-display font-bold text-primary">$0.00</h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const examples = {
+            'PO': "ĐƠN ĐẶT HÀNG (PO #2025-001)\nKhách hàng: Gucci Group\nSản phẩm: Da bò thuộc\nSố lượng: 500 sqft\nĐơn giá: $25\nTổng cộng: $12,500",
+            'Electricidad': "HÓA ĐƠN TIỀN ĐIỆN (EVN)\nMã khách hàng: PE01000234567\nTháng: 02/2026\nSố tiền thanh toán: 8.250.000 VND\nHạn thanh toán: 15/02/2026",
+            'Gasto': "PHIẾU CHI NỘI BỘ\nLý do: Thay dầu máy nén khí số 4\nNgười yêu cầu: Anh Tuấn (Kỹ thuật)\nSố tiền: 1.200.000 VND\nPhương thức: Tiền mặt"
+        };
+
+        function setExample(key) {
+            document.getElementById('vn-input').value = examples[key];
+        }
+
+        function clearInput() {
+            document.getElementById('vn-input').value = '';
+            location.reload();
+        }
+
+        async function simulateProcess() {
+            const input = document.getElementById('vn-input').value;
+            if(!input) return;
+
+            const aiOutput = document.getElementById('ai-output');
+            const aiStatusText = document.getElementById('ai-status-text');
+            const ceoStatus = document.getElementById('ceo-status');
+
+            // 1. Iniciando análisis
+            aiStatusText.innerText = "Analizando texto en Vietnamita...";
+            aiStatusText.classList.add('text-yellow-500');
+            aiOutput.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                    <p class="mt-4 text-xs tracking-widest animate-pulse">EL BIBLIOTECARIO ESTÁ LEYENDO...</p>
+                </div>
+            `;
+
+            // Simulación de latencia de IA
+            await new Promise(r => setTimeout(r, 2000));
+
+            // 2. Extracción de datos (Lógica simulada)
+            let result = {
+                tipo: "Gasto Operativo",
+                monto: "0",
+                moneda: "VND",
+                categoria: "Otros",
+                mensaje: "Se detectó un registro, pero falta claridad en los montos."
+            };
+
+            if(input.includes("ĐƠN ĐẶT HÀNG") || input.includes("$12,500")) {
+                result = {
+                    tipo: "Ingreso (PO)",
+                    monto: "12,500",
+                    moneda: "USD",
+                    categoria: "Ventas Internacionales",
+                    original: "PO #2025-001 para Gucci Group",
+                    maestria: "99.9% precisión"
+                };
+            } else if(input.includes("8.250.000")) {
+                result = {
+                    tipo: "Gasto Fijo",
+                    monto: "8,250,000",
+                    moneda: "VND",
+                    categoria: "EVN (Electricidad)",
+                    original: "Factura EVN Febrero",
+                    maestria: "98.5% precisión"
+                };
+            } else if(input.includes("1.200.000")) {
+                result = {
+                    tipo: "Gasto Operativo",
+                    monto: "1,200,000",
+                    moneda: "VND",
+                    categoria: "Mantenimiento",
+                    original: "Repuesto máquina Anh Tuấn",
+                    maestria: "95% precisión"
+                };
+            }
+
+            // 3. Mostrar resultados al CEO
+            aiStatusText.innerText = "ANÁLISIS COMPLETADO";
+            aiStatusText.classList.replace('text-yellow-500', 'text-primary');
+            ceoStatus.classList.replace('status-idle', 'status-ready');
+
+            aiOutput.innerHTML = `
+                <div class="w-full space-y-4 animate-in fade-in zoom-in duration-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-md font-bold uppercase tracking-widest">${result.tipo}</span>
+                        <span class="text-[10px] text-slate-500 font-mono">${result.maestria}</span>
+                    </div>
+                    <div class="text-left border-l-2 border-primary/50 pl-4 py-2 bg-white/5 rounded-r-xl">
+                        <p class="text-xs text-slate-400 uppercase tracking-tighter">Categoría</p>
+                        <h3 class="text-lg font-bold text-white">${result.categoria}</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-left">
+                        <div class="p-3 bg-white/5 rounded-xl">
+                            <p class="text-[9px] text-slate-500 uppercase">Monto Original</p>
+                            <p class="text-sm font-bold text-white">${result.monto} ${result.moneda}</p>
+                        </div>
+                         <div class="p-3 bg-white/5 rounded-xl">
+                            <p class="text-[9px] text-slate-500 uppercase">Validación</p>
+                            <p class="text-sm font-bold text-primary">LISTO</p>
+                        </div>
+                    </div>
+                    <button class="w-full bg-primary text-black font-black py-4 rounded-2xl text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        Confirmar y Cargar a Supabase
+                    </button>
+                    <p class="text-[10px] text-slate-500 italic">"Los datos de la planta han sido reconciliados con el Punto Cero."</p>
+                </div>
+            `;
+
+            // Actualizar Widgets de impacto
+            if(result.moneda === "USD") {
+                document.getElementById('impact-income').innerText = `$${result.monto}`;
+                const peace = (parseFloat(result.monto.replace(',','')) * 0.05).toFixed(2);
+                document.getElementById('impact-peace').innerText = `$${peace}`;
+            } else {
+                // Conversión aproximada para visualización
+                const usd = (parseFloat(result.monto.replace(/\./g,'')) / 25400).toFixed(2);
+                document.getElementById('impact-income').innerText = `-$${usd} (equiv)`;
+            }
+        }
+    </script>
+</body>
+</html>  
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import es from "./locales/es.json";
+import en from "./locales/en.json";
+import vi from "./locales/vi.json";
+
+// Detectar idioma guardado o definir prioridad por defecto
+// Sugerencia: Si es la planta, "vi" es el estándar de supervivencia.
+const savedLang = localStorage.getItem("lang");
+const defaultLang = savedLang || "vi"; 
+
+i18n.use(initReactI18next).init({
+  resources: { 
+    es: { translation: es }, 
+    en: { translation: en }, 
+    vi: { translation: vi } 
+  },
+  lng: defaultLang,
+  fallbackLng: "en", // El inglés actúa como el puente global si falta una traducción
+  interpolation: { 
+    escapeValue: false 
+  },
+  detection: {
+    order: ['localStorage', 'navigator'],
+    caches: ['localStorage']
+  }
+});
+
+export default i18n;
+// supabase/functions/welcome-email/index.ts
+import { createClient } from "https://esm.sh/@supabase/supabase-client@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const { clientEmail, clientName, lang } = await req.json();
+
+  // Diccionario de "Alma" por Idioma
+  const content = {
+    vi: {
+      subject: "Chào mừng bạn đến với Hệ sinh thái Serendipity Bros",
+      body: `Xin chào ${clientName},\n\nChúng tôi rất vinh dự được đồng hành cùng bạn. Với Serendipity, mỗi phép đo là một cam kết về chất lượng và sự minh bạch...`
+    },
+    es: {
+      subject: "Bienvenido a la Familia Serendipity Bros",
+      body: `Hola ${clientName},\n\nEs un honor darte la bienvenida a nuestro ecosistema. Aquí, la transparencia es nuestra fuerza y cada dato es un paso hacia la paz total...`
+    },
+    en: {
+      subject: "Welcome to Serendipity Bros Ecosystem",
+      body: `Hello ${clientName},\n\nWe are honored to have you as a partner. At Serendipity, our Quality Shield ensures total transparency and traceability in every square foot...`
+    }
+  };
+
+  const selected = content[lang as keyof typeof content] || content.en;
+
+  // Lógica para enviar vía Resend o SMTP
+  // ... 
+
+  return new Response(JSON.stringify({ sent: true }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+});
+<div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/10 rounded-lg">
+  <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" />
+  <p className="text-[10px] uppercase tracking-widest font-bold">
+    {t("clientMgmt.emailReady")}: {languages.find(l => l.code === i18n.language)?.label}
+  </p>
+</div>
+import { useTranslation } from "react-i18next";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Globe } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const languages = [
+  { code: "es", label: "Español", flag: "🇪🇸" },
+  { code: "en", label: "English", flag: "🇺🇸" },
+  { code: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
+];
+
+export default function LanguageSwitcher({ className }: { className?: string }) {
+  const { i18n } = useTranslation();
+
+  const change = (lng: string) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem("lang", lng);
+    // Opcional: Recargar sutilmente si hay lógicas de IA que dependan del idioma en el servidor
+    // window.location.reload(); 
+  };
+
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      <Select value={i18n.language} onValueChange={change}>
+        <SelectTrigger className="h-9 w-full bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/50 transition-all text-[11px] font-medium uppercase tracking-widest text-slate-300">
+          <div className="flex items-center gap-2">
+            <Globe className="h-3.5 w-3.5 text-primary/70" />
+            <SelectValue placeholder="Language" />
+          </div>
+        </SelectTrigger>
+        <SelectContent className="bg-[#0d0d0e] border-white/10">
+          {languages.map((l) => (
+            <SelectItem 
+              key={l.code} 
+              value={l.code}
+              className="text-xs focus:bg-primary/20 focus:text-primary transition-colors cursor-pointer"
+            >
+              <span className="mr-2">{l.flag}</span> {l.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+// En i18n.ts
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+const savedLang = localStorage.getItem("lang") || "vi"; // Prioridad a Vietnam por la planta
+
+i18n.use(initReactI18next).init({
+  lng: savedLang,
+  fallbackLng: "en",
+  // ... resto de tu config
+});
+import { ReactNode, useMemo } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import {
+  LayoutDashboard,
+  Package,
+  TrendingUp,
+  FileDown,
+  LogOut,
+  ShieldCheck,
+  UserCircle,
+  ExternalLink
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const clientNav = [
+  { path: "/client", key: "overview", icon: LayoutDashboard },
+  { path: "/client/orders", key: "orders", icon: Package },
+  { path: "/client/benefits", key: "benefits", icon: TrendingUp },
+  { path: "/client/documents", key: "documents", icon: FileDown },
+];
+
+export default function ClientLayout({ children }: { children: ReactNode }) {
+  const { user, signOut } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/client/login");
+  };
+
+  return (
+    <div className="dark min-h-screen flex bg-[#050505] text-slate-300">
+      {/* Sidebar Premium */}
+      <aside className="w-72 bg-card/20 backdrop-blur-2xl border-r border-white/5 flex flex-col">
+        <div className="p-8 border-b border-white/5">
+          <div className="flex items-center gap-3 mb-2 group">
+            <div className="bg-primary/10 p-2 rounded-full border border-primary/20 group-hover:bg-primary/20 transition-colors">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+            </div>
+            <h1 className="text-xl font-display font-black tracking-tighter text-white uppercase">
+              Serendipity<span className="text-primary/80 font-light italic">Partner</span>
+            </h1>
+          </div>
+          <p className="text-[9px] text-muted-foreground tracking-[0.3em] uppercase font-bold">
+            {t("clientPortal.title")}
+          </p>
+        </div>
+
+        {/* Client Context */}
+        <div className="px-6 py-6">
+          <div className="bg-gradient-to-br from-white/[0.03] to-transparent rounded-2xl p-4 border border-white/5 shadow-inner">
+             <div className="flex items-center gap-3 mb-3">
+               <UserCircle className="h-10 w-10 text-muted-foreground/50" />
+               <div className="overflow-hidden">
+                 <p className="text-xs font-bold text-white truncate">{user?.email}</p>
+                 <p className="text-[10px] text-primary uppercase font-bold tracking-widest">Socio Verificado</p>
+               </div>
+             </div>
+             <p className="text-[10px] italic text-muted-foreground leading-relaxed italic border-t border-white/5 pt-3">
+               "{t("clientPortal.login.motto")}"
+             </p>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-1.5">
+          {clientNav.map((item) => {
+            const Icon = item.icon;
+            const active = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-300 group relative",
+                  active 
+                    ? "bg-primary/10 text-primary font-bold shadow-[0_0_20px_rgba(var(--primary-rgb),0.05)]" 
+                    : "text-muted-foreground hover:bg-white/5 hover:text-white"
+                )}
+              >
+                {active && <div className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" />}
+                <Icon className={cn("h-4 w-4 transition-colors", active ? "text-primary" : "group-hover:text-primary")} />
+                {t(`clientPortal.nav.${item.key}`)}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-6 border-t border-white/5 space-y-4">
+          <LanguageSwitcher />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/5" 
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 mr-3" />
+            {t("nav.signOut")}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content with Background Glow */}
+      <main className="flex-1 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full -mr-80 -mt-80 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/5 blur-[100px] rounded-full -ml-40 -mb-40 pointer-events-none" />
+        
+        <div className="h-full overflow-auto p-8 lg:p-12 relative z-10">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
+<Button 
+  variant="outline" 
+  size="sm" 
+  onClick={() => handleDownloadCertificate(orderId)}
+  className="border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary group"
+>
+  <div className="h-2 w-2 rounded-full bg-green-500 mr-2 shadow-[0_0_5px_#22c55e] group-hover:animate-pulse" />
+  {t("clientPortal.documents.downloadImpact")}
+</Button>
+"clientPortal": {
+  "documents": {
+    "downloadImpact": "Tải Chứng Nhận Minh Bạch ✨",
+    "impactDesc": "Chứng nhận này xác nhận độ chính xác của phép đo và đóng góp xã hội của bạn."
+  }
+}
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+export const generateAbundanceReport = async (userId: string) => {
+  try {
+    // 1. Llamada a la RPC segura que creamos para obtener los totales
+    const { data: stats, error: statsError } = await supabase
+      .rpc('get_monthly_stats');
+
+    if (statsError) throw statsError;
+
+    // 2. Obtener el estado del Fondo de Paz (5% del excedente)
+    const { data: costs } = await supabase.from("fixed_costs").select("*").maybeSingle();
+    const totalCosts = (costs?.payroll || 0) + (costs?.rent || 0) + (costs?.evn || 0);
+    const surplus = stats.total_invoiced > totalCosts ? stats.total_invoiced - totalCosts : 0;
+    const peaceFund = surplus * 0.05;
+
+    // 3. Preparar el envío a la Edge Function de PDF
+    const { data, error } = await supabase.functions.invoke('generate-pdf', {
+      body: {
+        reportType: 'WEEKLY_ABUNDANCE',
+        data: {
+          period: "Febrero 2026 - Semana 2",
+          invoiced: stats.total_invoiced,
+          survivalGoal: totalCosts,
+          peaceFund: peaceFund,
+          message: "Làm tốt lắm! Nhà an toàn, lương an toàn. (¡Buen trabajo! Hogar seguro, salario seguro.)"
+        }
+      }
+    });
+
+    if (error) throw error;
+    
+    toast.success("Reporte de Abundancia generado con éxito. 📄✨");
+    return data.url; // URL del PDF generado
+    
+  } catch (err) {
+    console.error("Error al generar reporte:", err);
+    toast.error("El Bibliotecario no pudo procesar el reporte. Verifica la conexión.");
+  }
+};
+<Button 
+  onClick={generateAbundanceReport}
+  className="relative group overflow-hidden bg-slate-900 border border-primary/20 hover:border-primary transition-all h-16 w-full"
+>
+  <div className="absolute left-4 h-3 w-3 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse" />
+  <span className="ml-4 font-display font-bold uppercase tracking-widest text-[11px]">
+    Generar Espejo de Abundancia (PDF)
+  </span>
+</Button>
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { UnifiedCommandCenter } from "@/components/UnifiedCommandCenter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ShieldCheck, Lock, Factory } from "lucide-react";
+import { toast } from "sonner";
+
+export default function ProtectedPublicDashboard() {
+  const { t } = useTranslation();
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    // Verificar sesión al cargar
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handlePlantLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+      toast.error("Acceso denegado: Verifica las credenciales de planta.");
+      setLoading(false);
+    } else {
+      toast.success("Conexión establecida con el Ecosistema");
+    }
+  };
+
+  if (loading) return <div className="h-screen flex items-center justify-center bg-[#0a0a0b] text-primary animate-pulse font-display italic">SERENDIPITY...</div>;
+
+  // ESTADO 1: ACCESO RESTRINGIDO (Login de Planta)
+  if (!session) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#0a0a0b] p-4">
+        <div className="max-w-md w-full space-y-8 bg-card/30 p-8 rounded-3xl border border-white/5 backdrop-blur-xl">
+          <div className="text-center">
+            <div className="mx-auto h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 border border-primary/20">
+              <Lock className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-black tracking-tighter text-white font-display">ENTRADA A LA PLANTA</h2>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] mt-2">
+              Lá Chắn Chất Lượng — Sistema de Seguridad
+            </p>
+          </div>
+
+          <form onSubmit={handlePlantLogin} className="space-y-4">
+            <Input 
+              type="email" 
+              placeholder="Email de Planta (ej: planta@serendipity.com)" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-white/5 border-white/10 h-12"
+            />
+            <Input 
+              type="password" 
+              placeholder="Contraseña Maestra" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-white/5 border-white/10 h-12"
+            />
+            <Button type="submit" className="w-full h-12 bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest text-[11px]">
+              <Factory className="mr-2 h-4 w-4" /> Activar Espejo Brillante
+            </Button>
+          </form>
+          
+          <p className="text-[9px] text-center text-muted-foreground italic">
+            "Para crecer como un Bosque Consciente, cada acceso debe ser íntegro."
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ESTADO 2: DASHBOARD ACTIVO (Gương Sáng)
+  return (
+    <div className="min-h-screen bg-[#0a0a0b] p-6 md:p-12">
+      <header className="flex justify-between items-center mb-12 border-b border-white/5 pb-6">
+        <div>
+          <h1 className="text-2xl font-black text-white font-display flex items-center gap-3">
+            <ShieldCheck className="text-primary h-6 w-6" />
+            GƯƠNG SÁNG — {t("publicDashboard.subtitle")}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">Conectado como: {session.user.email}</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()} className="text-muted-foreground hover:text-destructive">
+          Cerrar Sesión
+        </Button>
+      </header>
+
+      {/* Aquí inyectamos el Centro de Comando que ya tiene el Termómetro y el Fondo de Paz */}
+      <UnifiedCommandCenter />
+    </div>
+  );
+}
+import { NavLink as RouterNavLink, NavLinkProps } from "react-router-dom";
+import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
+
+interface NavLinkCompatProps extends Omit<NavLinkProps, "className"> {
+  className?: string;
+  activeClassName?: string;
+  pendingClassName?: string;
+}
+
+const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
+  ({ className, activeClassName, pendingClassName, to, ...props }, ref) => {
+    return (
+      <RouterNavLink
+        ref={ref}
+        to={to}
+        className={({ isActive, isPending }) =>
+          cn(
+            // Clase base: Estética de Serendipity Bros
+            "flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-300 group relative",
+            
+            // Estado Pendiente (Luz Ámbar/Procesando)
+            isPending && cn("opacity-50 cursor-wait", pendingClassName),
+            
+            // Estado Activo (Luz Verde/Conectado)
+            isActive 
+              ? cn("bg-primary/10 text-primary font-bold shadow-[0_0_15px_rgba(var(--primary),0.1)]", activeClassName)
+              : "text-muted-foreground hover:bg-white/5 hover:text-white",
+            
+            className
+          )
+        }
+        {...props}
+      >
+        {({ isActive }) => (
+          <>
+            {/* Indicador de "Luz de Estado" en el lateral del link */}
+            <div className={cn(
+              "absolute left-0 w-1 h-4 rounded-r-full transition-all duration-500",
+              isActive ? "bg-primary opacity-100 shadow-[0_0_8px_#22c55e]" : "bg-transparent opacity-0"
+            )} />
+            {props.children as React.ReactNode}
+          </>
+        )}
+      </RouterNavLink>
+    );
+  },
+);
+
+NavLink.displayName = "NavLink";
+
+export { NavLink };
+-- 1. Activar RLS en la tabla crítica
+ALTER TABLE public.monthly_progress ENABLE ROW LEVEL SECURITY;
+
+-- 2. Permiso total solo para el CEO (Tú)
+CREATE POLICY "CEO manage all progress"
+  ON public.monthly_progress FOR ALL
+  TO authenticated
+  USING (has_role(auth.uid(), 'ceo'::app_role));
+
+-- 3. Permiso de lectura para el equipo (Paz informativa)
+CREATE POLICY "Staff read progress"
+  ON public.monthly_progress FOR SELECT
+  TO authenticated
+  USING (
+    has_role(auth.uid(), 'production'::app_role) OR 
+    has_role(auth.uid(), 'measurement'::app_role)
+  );
+  import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Camera, FileUp, Zap, CheckCircle2, AlertCircle, Image as ImageIcon, CreditCard, Banknote } from "lucide-react";
+import { toast } from "sonner";
+
+export const UniversalCaptureAgent = () => {
+  const { t } = useTranslation();
+  const [fileStatus, setFileStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [inputType, setInputType] = useState<'expense' | 'income'>('expense');
+  const [previewData, setPreviewData] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Indicadores de Luces "One Touch"
+  const LightIndicator = ({ status }: { status: 'idle' | 'success' | 'error' }) => (
+    <div className="flex items-center gap-2 mb-4">
+      <div className={`h-4 w-4 rounded-full blur-[2px] transition-all duration-500 ${
+        status === 'success' ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 
+        status === 'error' ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : 
+        'bg-slate-700'
+      }`} />
+      <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+        {status === 'success' ? 'Sistema Conectado' : status === 'error' ? 'Error de Lectura' : 'Esperando Entrada'}
+      </span>
+    </div>
+  );
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileStatus('idle');
+    toast.info("IA Analizando formato... " + file.name);
+
+    // Simulación de análisis de la IA (Adaptabilidad Universal)
+    setTimeout(() => {
+      // Aquí iría la lógica de OCR o procesamiento de Excel/CSV
+      const mockParsedData = {
+        type: file.type.includes('image') ? 'Comprobante Físico' : 'Documento Digital',
+        category: 'Operativo',
+        amount: 4500000,
+        currency: 'VND',
+        suggestion: "Detectado: Pago EVN (Electricidad). ¿Confirmar ingreso?"
+      };
+      
+      setPreviewData(mockParsedData);
+      setFileStatus('success');
+    }, 1500);
+  };
+
+  return (
+    <Card className="border-white/5 bg-[#0d0d0e]/80 backdrop-blur-xl">
+      <CardContent className="p-6">
+        <LightIndicator status={fileStatus} />
+        
+        <div className="flex gap-4 mb-6">
+          <Button 
+            variant={inputType === 'expense' ? 'default' : 'outline'}
+            onClick={() => setInputType('expense')}
+            className="flex-1 h-12 text-xs uppercase tracking-tighter"
+          >
+            <CreditCard className="mr-2 h-4 w-4" /> Gasto Operativo
+          </Button>
+          <Button 
+            variant={inputType === 'income' ? 'default' : 'outline'}
+            onClick={() => setInputType('income')}
+            className="flex-1 h-12 text-xs uppercase tracking-tighter"
+          >
+            <Banknote className="mr-2 h-4 w-4" /> Ingreso (Transfer/Cash)
+          </Button>
+        </div>
+
+        {/* Zona de Carga Universal */}
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className="group relative border-2 border-dashed border-white/10 rounded-2xl p-10 text-center hover:border-primary/50 transition-all cursor-pointer bg-white/[0.02]"
+        >
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            className="hidden" 
+            accept="image/*,.pdf,.csv,.xlsx" 
+          />
+          
+          <div className="flex flex-col items-center">
+            <div className="p-4 rounded-full bg-primary/10 mb-4 group-hover:scale-110 transition-transform">
+              {inputType === 'expense' ? <FileUp className="h-8 w-8 text-primary" /> : <Camera className="h-8 w-8 text-primary" />}
+            </div>
+            <h3 className="text-sm font-bold text-white mb-1">Carga de Evidencia Digital o Física</h3>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+              PDF, EXCEL, CSV O FOTO DEL COMPROBANTE
+            </p>
+          </div>
+        </div>
+
+        {/* Panel de Inteligencia Asistente (Reporte Pre-Ingreso) */}
+        {previewData && (
+          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10 animate-in slide-in-from-bottom-2">
+            <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+              <Zap className="h-4 w-4 text-yellow-500" />
+              <span className="text-xs font-bold uppercase tracking-widest">Análisis de la IA</span>
+            </div>
+            
+            <div className="space-y-3">
+              <p className="text-sm text-slate-300">{previewData.suggestion}</p>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <Badge variant="outline" className="justify-center py-1 bg-black/40">{previewData.type}</Badge>
+                <Badge variant="outline" className="justify-center py-1 bg-black/40 text-primary border-primary/30">
+                  {previewData.amount.toLocaleString()} {previewData.currency}
+                </Badge>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button className="flex-1 bg-green-600 hover:bg-green-700 text-[10px] h-8 uppercase font-bold">
+                  <CheckCircle2 className="mr-2 h-3 w-3" /> Confirmar e Ingresar
+                </Button>
+                <Button variant="ghost" className="flex-1 text-destructive hover:bg-destructive/10 text-[10px] h-8 uppercase font-bold" onClick={() => setPreviewData(null)}>
+                  <AlertCircle className="mr-2 h-3 w-3" /> Corregir
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Heart, ShieldCheck, TrendingUp, PiggyBank, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+
+export const UnifiedCommandCenter = () => {
+  const { t } = useTranslation();
+  const [metrics, setMetrics] = useState({
+    invoiced: 0,
+    costs: 0,
+    survivalGoal: 20000, // Punto Cero (Base)
+    reserveFund: 0,
+    isSafe: false
+  });
+
+  useEffect(() => {
+    const loadZenMetrics = async () => {
+      // 1. Obtener Facturación del Mes Actual
+      const { data: inv } = await supabase.from("invoices").select("total_amount");
+      const totalInvoiced = inv?.reduce((acc, curr) => acc + curr.total_amount, 0) || 0;
+
+      // 2. Obtener Costos Fijos (La Carga del Pasado)
+      const { data: costs } = await supabase.from("fixed_costs").select("*").maybeSingle();
+      const totalCosts = (costs?.payroll || 0) + (costs?.rent || 0) + (costs?.evn || 0);
+
+      // 3. Lógica del "Fondo de Paz" (Reserva del 5% sobre el excedente)
+      const surplus = totalInvoiced > totalCosts ? totalInvoiced - totalCosts : 0;
+      const reserve = surplus * 0.05;
+
+      setMetrics({
+        invoiced: totalInvoiced,
+        costs: totalCosts || 20000,
+        survivalGoal: totalCosts || 20000,
+        reserveFund: reserve,
+        isSafe: totalInvoiced >= totalCosts
+      });
+    };
+
+    loadZenMetrics();
+  }, []);
+
+  const progress = Math.min((metrics.invoiced / metrics.survivalGoal) * 100, 100);
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-700">
+      {/* 1. Alerta de Estado de Gracia */}
+      {!metrics.isSafe ? (
+        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 backdrop-blur-md">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle className="font-display font-bold">{t("publicDashboard.survivalAlert")}</AlertTitle>
+          <AlertDescription>{t("publicDashboard.survivalAlertDesc")}</AlertDescription>
+        </Alert>
+      ) : (
+        <Alert className="bg-green-500/10 border-green-500/20 text-green-500 backdrop-blur-md">
+          <ShieldCheck className="h-5 w-5" />
+          <AlertTitle className="font-display font-bold">{t("publicDashboard.celebration")}</AlertTitle>
+          <AlertDescription>{t("publicDashboard.celebrationText")}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 2. El Termómetro de Supervivencia */}
+        <Card className="md:col-span-2 border-white/5 bg-card/50 backdrop-blur-lg overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+             <TrendingUp size={120} />
+          </div>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Heart className="h-4 w-4 text-primary" />
+              {t("publicDashboard.thermometer")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-end mb-4">
+              <h2 className="text-4xl font-black font-display text-white">
+                ${metrics.invoiced.toLocaleString()} 
+                <span className="text-xl text-muted-foreground font-light block md:inline md:ml-2">
+                  / ${metrics.survivalGoal.toLocaleString()}
+                </span>
+              </h2>
+              <p className="text-xs font-bold text-primary animate-pulse uppercase tracking-tighter">
+                {progress.toFixed(1)}% {t("publicDashboard.momentum")}
+              </p>
+            </div>
+            <Progress value={progress} className="h-4 bg-white/5" />
+            <p className="mt-4 text-[11px] italic text-muted-foreground text-center">
+              {t("publicDashboard.alcanciaQuote")}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 3. La Alcancía de Sofía (Heo Đất) */}
+        <Card className="border-primary/20 bg-primary/5 backdrop-blur-lg flex flex-col justify-center items-center p-6 text-center group">
+          <div className="bg-primary/20 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform duration-500">
+            <PiggyBank className="h-10 w-10 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-1">{t("dashboard.alcancia")}</h3>
+          <p className="text-[10px] text-muted-foreground leading-tight mb-4 px-4">
+            {t("dashboard.alcanciaGrowing")}
+          </p>
+          <div className="text-3xl font-black text-primary">
+            ${metrics.reserveFund.toLocaleString()}
+          </div>
+          <span className="text-[9px] uppercase tracking-[0.2em] mt-2 text-primary/60 font-bold">
+            {t("publicDashboard.readyToInvoice")}
+          </span>
+        </Card>
+      </div>
+
+      {/* 4. El Manifiesto Visual */}
+      <footer className="pt-8 border-t border-white/5 text-center">
+        <p className="text-xs text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          {t("publicDashboard.manifesto2")}
+        </p>
+        <p className="text-[10px] mt-4 uppercase tracking-widest opacity-30">
+          {t("publicDashboard.footer")}
+        </p>
+      </footer>
+    </div>
+  );
+};
+import { ReactNode, useMemo } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import {
+  Factory, Ruler, BarChart3, FileText, LogOut,
+  LayoutDashboard, Building2, ShieldCheck, Sparkles, User
+} from "lucide-react";
+
+const navKeys = [
+  { path: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["ceo", "production", "measurement"] as const },
+  { path: "/production", key: "production", icon: Factory, roles: ["ceo", "production"] as const },
+  { path: "/measurement", key: "measurement", icon: Ruler, roles: ["ceo", "measurement"] as const },
+  { path: "/invoices", key: "invoices", icon: FileText, roles: ["ceo"] as const },
+  { path: "/financials", key: "financials", icon: BarChart3, roles: ["ceo"] as const },
+  { path: "/clients", key: "clients", icon: Building2, roles: ["ceo"] as const },
+];
+
+export default function AppLayout({ children }: { children: ReactNode }) {
+  const { user, roles, signOut, isCeo, firstName } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const visibleNav = useMemo(() => 
+    navKeys.filter((item) => isCeo || item.roles.some((r) => roles.includes(r as any))),
+    [isCeo, roles]
+  );
+
+  // Directriz del "Mediador" basada en el rol
+  const getDailyGuidance = () => {
+    if (isCeo) return "Administra con sabiduría; el Padre provee.";
+    if (roles.includes("production" as any)) return "Maestría en cada piel; calidad es paz.";
+    return "Precisión en la medida; justicia en el dato.";
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
+  return (
+    <div className="dark min-h-screen flex bg-[#0a0a0b] text-slate-200">
+      <aside className="w-72 bg-card/30 backdrop-blur-xl border-r border-white/5 flex flex-col shadow-2xl">
+        {/* Logo & Brand */}
+        <div className="p-8 border-b border-white/5">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-primary/20 p-2 rounded-lg border border-primary/30">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+            </div>
+            <h1 className="text-xl font-display font-black tracking-tighter text-white">
+              SERENDIPITY<span className="text-primary/80 font-light">BROS</span>
+            </h1>
+          </div>
+          <p className="text-[9px] text-muted-foreground tracking-[0.3em] uppercase font-medium">
+            {t("nav.erpSystem")}
+          </p>
+        </div>
+
+        {/* User Context & Guidance */}
+        <div className="px-6 py-4">
+          <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+             <div className="flex items-center gap-3 mb-2">
+               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                 <User className="h-4 w-4 text-primary" />
+               </div>
+               <div className="flex-1 overflow-hidden">
+                 <p className="text-sm font-bold truncate">Santi @ Serendipity</p>
+                 <p className="text-[10px] text-primary uppercase font-bold tracking-widest">{roles[0]}</p>
+               </div>
+             </div>
+             <p className="text-[11px] italic text-muted-foreground leading-relaxed border-t border-white/5 pt-2 mt-2">
+               "{getDailyGuidance()}"
+             </p>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+          {visibleNav.map((item) => {
+            const Icon = item.icon;
+            const active = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-300 group ${
+                  active
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 font-bold scale-[1.02]"
+                    : "text-muted-foreground hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <Icon className={`h-4 w-4 ${active ? "animate-pulse" : "group-hover:text-primary transition-colors"}`} />
+                {t(`nav.${item.key}`)}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Footer Actions */}
+        <div className="p-6 border-t border-white/5 space-y-4">
+          <div className="bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-xl border border-primary/10">
+            <LanguageSwitcher />
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all" 
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 mr-3" />
+            {t("nav.signOut")}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 relative overflow-hidden flex flex-col">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
+        
+        <div className="flex-1 overflow-auto relative p-8 md:p-12">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
+import { useEffect, useRef, useState } from "react";
+import { Html5Qrcode } from "html5-qrcode";
+import { Button } from "@/components/ui/button";
+import { Camera, X, CheckCircle2, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner"; // Usamos sonner para un feedback más elegante
+
+interface QrScannerProps {
+  onScan: (result: string) => void;
+}
+
+export default function QrScanner({ onScan }: QrScannerProps) {
+  const { t, i18n } = useTranslation();
+  const [scanning, setScanning] = useState(false);
+  const [lastScan, setLastScan] = useState<string | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const containerId = "qr-reader";
+
+  const startScanning = async () => {
+    setScanning(true);
+    setLastScan(null);
+    
+    try {
+      const scanner = new Html5Qrcode(containerId);
+      scannerRef.current = scanner;
+      
+      // Configuración optimizada para la planta (Vietnam Industrial Setting)
+      const config = {
+        fps: 15, // Mayor FPS para capturas rápidas
+        qrbox: { width: 280, height: 280 },
+        aspectRatio: 1.0
+      };
+
+      await scanner.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          handleSuccess(decodedText);
+        },
+        () => {} // Errores silenciosos para no interrumpir el flujo
+      );
+    } catch (err) {
+      console.error("QR scanner error:", err);
+      toast.error(t("errors.camera_access"));
+      setScanning(false);
+    }
+  };
+
+  const handleSuccess = (decodedText: string) => {
+    setLastScan(decodedText);
+    onScan(decodedText);
+    
+    // Feedback Humano y Profesional
+    const successMsg = i18n.language === 'vi' 
+      ? "Làm tốt lắm! Tài liệu đã được ghi lại." // "¡Buen trabajo! Material registrado."
+      : "¡Maestría lograda! Material registrado correctamente.";
+    
+    toast.success(successMsg, {
+      icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+      duration: 3000,
+    });
+
+    stopScanning();
+  };
+
+  const stopScanning = async () => {
+    try {
+      if (scannerRef.current?.isScanning) {
+        await scannerRef.current.stop();
+      }
+      scannerRef.current?.clear();
+    } catch (e) {
+      console.warn("Clean up error", e);
+    }
+    scannerRef.current = null;
+    setScanning(false);
+  };
+
+  useEffect(() => {
+    return () => { stopScanning(); };
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      {!scanning ? (
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-1000"></div>
+          <Button 
+            onClick={startScanning} 
+            className="relative w-full h-16 text-lg font-display bg-background border-2 border-primary/20 hover:border-primary transition-all"
+          >
+            <Camera className="h-6 w-6 mr-3 text-primary" />
+            {t("measurement.scanQr")}
+          </Button>
+          <p className="text-[10px] text-center mt-2 text-muted-foreground uppercase tracking-tighter italic">
+            {t("measurement.operator_instruction")}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4 animate-in fade-in zoom-in duration-300">
+          <div className="relative">
+            <div id={containerId} className="rounded-2xl overflow-hidden border-4 border-primary/30 shadow-2xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-primary/50 rounded-lg pointer-events-none animate-pulse">
+               <Zap className="absolute -top-6 -left-6 text-primary h-6 w-6" />
+            </div>
+          </div>
+          
+          <Button variant="ghost" size="sm" onClick={stopScanning} className="w-full text-destructive hover:bg-destructive/10">
+            <X className="h-4 w-4 mr-2" />
+            {t("measurement.stopScan")}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
+import { Shield, AlertCircle, TrendingUp, Heart } from "lucide-react";
+
+// Meta física del archivo de Diagnóstico: 2 meses de operación
+const RESERVE_GOAL_VND = 1000000000; 
+
+export const SurvivalThermometer = () => {
+  const { t } = useTranslation();
+  const [data, setData] = useState({
+    totalInvoiced: 0,
+    monthlyCosts: 0,
+    reserveFund: 0,
+  });
+
+  useEffect(() => {
+    const fetchFinancialStats = async () => {
+      const now = new Date();
+      // 1. Obtener Costos Fijos Reales del mes
+      const { data: costs } = await supabase
+        .from("fixed_costs")
+        .select("*")
+        .eq("month", now.getMonth() + 1)
+        .eq("year", now.getFullYear())
+        .maybeSingle();
+
+      // 2. Obtener Facturación Total del mes
+      const { data: inv } = await supabase.from("invoices").select("total_amount");
+      const totalInvoiced = inv?.reduce((acc, curr) => acc + curr.total_amount, 0) || 0;
+
+      const payroll = costs?.payroll || 0;
+      const rent = costs?.rent || 0;
+      const evn = costs?.evn || 0;
+      const other = costs?.other_costs || 0;
+
+      setData({
+        totalInvoiced,
+        monthlyCosts: payroll + rent + evn + other,
+        reserveFund: totalInvoiced > (payroll + rent + evn + other) 
+                     ? (totalInvoiced - (payroll + rent + evn + other)) * 0.10 // 10% al fondo
+                     : 0
+      });
+    };
+
+    fetchFinancialStats();
+  }, []);
+
+  const breakEven = data.monthlyCosts || 20000; // Default a 20k si no hay datos
+  const progress = Math.min((data.totalInvoiced / breakEven) * 100, 100);
+  const status = progress < 100 ? "yellow" : "green";
+
+  return (
+    <Card className={`border-l-4 ${status === 'green' ? 'border-l-green-500' : 'border-l-yellow-500'} bg-card/50 backdrop-blur`}>
+      <CardContent className="pt-6">
+        <div className="flex justify-between items-end mb-4">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              {t("status.survival_mode")}
+            </p>
+            <h2 className="text-3xl font-bold font-display">
+              ${data.totalInvoiced.toLocaleString()} 
+              <span className="text-lg text-muted-foreground font-normal"> / ${breakEven.toLocaleString()}</span>
+            </h2>
+          </div>
+          <div className="text-right">
+             {progress >= 100 ? (
+               <div className="flex items-center text-green-500 font-bold">
+                 <Shield className="mr-2 h-5 w-5" /> {t("status.peace")}
+               </div>
+             ) : (
+               <div className="flex items-center text-yellow-500 font-bold animate-pulse">
+                 <AlertCircle className="mr-2 h-5 w-5" /> {t("status.working")}
+               </div>
+             )}
+          </div>
+        </div>
+
+        <Progress value={progress} className="h-3 mb-2" />
+        
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="bg-primary/5 p-3 rounded-lg border border-primary/10">
+            <p className="text-xs text-muted-foreground flex items-center">
+              <TrendingUp className="h-3 w-3 mr-1" /> {t("financials.net_flow")}
+            </p>
+            <p className="text-lg font-bold">${(data.totalInvoiced - data.monthlyCosts).toLocaleString()}</p>
+          </div>
+          <div className="bg-green-500/5 p-3 rounded-lg border border-green-500/10">
+            <p className="text-xs text-muted-foreground flex items-center">
+              <Heart className="h-3 w-3 mr-1" /> {t("financials.peace_fund")}
+            </p>
+            <p className="text-lg font-bold text-green-600">${data.reserveFund.toLocaleString()}</p>
+          </div>
+        </div>
+        
+        <p className="mt-4 text-xs italic text-muted-foreground text-center">
+          "Administrando con sabiduría lo que el Padre provee hoy."
+        </p>
+      </CardContent>
+    </Card>
+  );
+};

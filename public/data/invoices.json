@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-02-13T00:00:00Z",
+  "facturas": [
+    {
+      "id": "INV-2026-02-001",
+      "cliente": "PRARA",
+      "fecha": "2026-02-01",
+      "monto": 87500000,
+      "moneda": "VND",
+      "estado": "pagada",
+      "productosPrincipales": ["Bolsas premium", "Bolsas decorativas"],
+      "cantidadTotal": 45000
+    },
+    {
+      "id": "INV-2026-02-002",
+      "cliente": "PRARA",
+      "fecha": "2026-02-05",
+      "monto": 92000000,
+      "moneda": "VND",
+      "estado": "pagada",
+      "productosPrincipales": ["Bolsas premium", "Bolsas eco"],
+      "cantidadTotal": 48000
+    },
+    {
+      "id": "INV-2026-02-003",
+      "cliente": "SUPREME",
+      "fecha": "2026-02-07",
+      "monto": 65000000,
+      "moneda": "VND",
+      "estado": "pendiente",
+      "productosPrincipales": ["Bolsas shopping"],
+      "cantidadTotal": 28000
+    },
+    {
+      "id": "INV-2026-02-004",
+      "cliente": "FARIDA",
+      "fecha": "2026-02-10",
+      "monto": 32500000,
+      "moneda": "VND",
+      "estado": "pendiente",
+      "productosPrincipales": ["Bolsas boutique"],
+      "cantidadTotal": 15000
+    },
+    {
+      "id": "INV-2026-02-005",
+      "cliente": "DONTO",
+      "fecha": "2026-02-11",
+      "monto": 20000000,
+      "moneda": "VND",
+      "estado": "pendiente",
+      "productosPrincipales": ["Bolsas gift"],
+      "cantidadTotal": 12000
+    }
+  ],
+  "resumen": {
+    "totalFacturado": 297000000,
+    "totalPagado": 179500000,
+    "totalPendiente": 117500000,
+    "cantidadFacturas": 5,
+    "facturasActivas": 3,
+    "facturaPorCliente": {
+      "PRARA": 179500000,
+      "SUPREME": 65000000,
+      "FARIDA": 32500000,
+      "DONTO": 20000000
+    }
+  }
+}

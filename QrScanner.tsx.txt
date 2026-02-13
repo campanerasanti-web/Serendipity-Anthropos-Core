@@ -1,0 +1,116 @@
+import { useEffect, useRef, useState } from "react";
+import { Html5Qrcode } from "html5-qrcode";
+import { Button } from "@/components/ui/button";
+import { Camera, X, CheckCircle2, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner"; // Usamos sonner para un feedback más elegante
+
+interface QrScannerProps {
+  onScan: (result: string) => void;
+}
+
+export default function QrScanner({ onScan }: QrScannerProps) {
+  const { t, i18n } = useTranslation();
+  const [scanning, setScanning] = useState(false);
+  const [lastScan, setLastScan] = useState<string | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const containerId = "qr-reader";
+
+  const startScanning = async () => {
+    setScanning(true);
+    setLastScan(null);
+    
+    try {
+      const scanner = new Html5Qrcode(containerId);
+      scannerRef.current = scanner;
+      
+      // Configuración optimizada para la planta (Vietnam Industrial Setting)
+      const config = {
+        fps: 15, // Mayor FPS para capturas rápidas
+        qrbox: { width: 280, height: 280 },
+        aspectRatio: 1.0
+      };
+
+      await scanner.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          handleSuccess(decodedText);
+        },
+        () => {} // Errores silenciosos para no interrumpir el flujo
+      );
+    } catch (err) {
+      console.error("QR scanner error:", err);
+      toast.error(t("errors.camera_access"));
+      setScanning(false);
+    }
+  };
+
+  const handleSuccess = (decodedText: string) => {
+    setLastScan(decodedText);
+    onScan(decodedText);
+    
+    // Feedback Humano y Profesional
+    const successMsg = i18n.language === 'vi' 
+      ? "Làm tốt lắm! Tài liệu đã được ghi lại." // "¡Buen trabajo! Material registrado."
+      : "¡Maestría lograda! Material registrado correctamente.";
+    
+    toast.success(successMsg, {
+      icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+      duration: 3000,
+    });
+
+    stopScanning();
+  };
+
+  const stopScanning = async () => {
+    try {
+      if (scannerRef.current?.isScanning) {
+        await scannerRef.current.stop();
+      }
+      scannerRef.current?.clear();
+    } catch (e) {
+      console.warn("Clean up error", e);
+    }
+    scannerRef.current = null;
+    setScanning(false);
+  };
+
+  useEffect(() => {
+    return () => { stopScanning(); };
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      {!scanning ? (
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-1000"></div>
+          <Button 
+            onClick={startScanning} 
+            className="relative w-full h-16 text-lg font-display bg-background border-2 border-primary/20 hover:border-primary transition-all"
+          >
+            <Camera className="h-6 w-6 mr-3 text-primary" />
+            {t("measurement.scanQr")}
+          </Button>
+          <p className="text-[10px] text-center mt-2 text-muted-foreground uppercase tracking-tighter italic">
+            {t("measurement.operator_instruction")}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4 animate-in fade-in zoom-in duration-300">
+          <div className="relative">
+            <div id={containerId} className="rounded-2xl overflow-hidden border-4 border-primary/30 shadow-2xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-primary/50 rounded-lg pointer-events-none animate-pulse">
+               <Zap className="absolute -top-6 -left-6 text-primary h-6 w-6" />
+            </div>
+          </div>
+          
+          <Button variant="ghost" size="sm" onClick={stopScanning} className="w-full text-destructive hover:bg-destructive/10">
+            <X className="h-4 w-4 mr-2" />
+            {t("measurement.stopScan")}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

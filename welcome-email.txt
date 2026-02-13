@@ -1,0 +1,44 @@
+// supabase/functions/welcome-email/index.ts
+import { createClient } from "https://esm.sh/@supabase/supabase-client@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const { clientEmail, clientName, lang } = await req.json();
+
+  // Diccionario de "Alma" por Idioma
+  const content = {
+    vi: {
+      subject: "Chào mừng bạn đến với Hệ sinh thái Serendipity Bros",
+      body: `Xin chào ${clientName},\n\nChúng tôi rất vinh dự được đồng hành cùng bạn. Với Serendipity, mỗi phép đo là một cam kết về chất lượng và sự minh bạch...`
+    },
+    es: {
+      subject: "Bienvenido a la Familia Serendipity Bros",
+      body: `Hola ${clientName},\n\nEs un honor darte la bienvenida a nuestro ecosistema. Aquí, la transparencia es nuestra fuerza y cada dato es un paso hacia la paz total...`
+    },
+    en: {
+      subject: "Welcome to Serendipity Bros Ecosystem",
+      body: `Hello ${clientName},\n\nWe are honored to have you as a partner. At Serendipity, our Quality Shield ensures total transparency and traceability in every square foot...`
+    }
+  };
+
+  const selected = content[lang as keyof typeof content] || content.en;
+
+  // Lógica para enviar vía Resend o SMTP
+  // ... 
+
+  return new Response(JSON.stringify({ sent: true }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+});
+<div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/10 rounded-lg">
+  <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" />
+  <p className="text-[10px] uppercase tracking-widest font-bold">
+    {t("clientMgmt.emailReady")}: {languages.find(l => l.code === i18n.language)?.label}
+  </p>
+</div>

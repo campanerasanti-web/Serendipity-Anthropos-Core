@@ -1,0 +1,8 @@
+[
+  { "Path": "/api/admin", "Critical": true, "RequiresAuth": true },
+  { "Path": "/api/config", "Critical": true, "RequiresAuth": false },
+  { "Path": "/api/users", "Critical": true, "RequiresAuth": true },
+  { "Path": "/api/payments", "Critical": true, "RequiresAuth": true },
+  { "Path": "/api/reports", "Critical": false, "RequiresAuth": true },
+  { "Path": "/api/public", "Critical": false, "RequiresAuth": false }
+]

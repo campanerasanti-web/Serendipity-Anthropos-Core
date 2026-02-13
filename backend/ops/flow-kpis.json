@@ -1,0 +1,9 @@
+{
+  "FLOW-001": "TiempoDeRecepcion",
+  "FLOW-002": "TasaDeProcesamiento",
+  "FLOW-003": "DefectosPorLote",
+  "FLOW-004": "CajasPorHora",
+  "FLOW-005": "TiempoDeEspera",
+  "FLOW-006": "TiempoDeEntrega",
+  "FLOW-007": "TasaDeRetorno"
+}

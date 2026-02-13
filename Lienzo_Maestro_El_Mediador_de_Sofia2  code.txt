@@ -1,0 +1,167 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Heart, 
+  Shield, 
+  Zap, 
+  CheckCircle2, 
+  Clock, 
+  Sparkles, 
+  Compass,
+  User,
+  Activity,
+  Waves
+} from 'lucide-react';
+
+const App = () => {
+  const [time, setTime] = useState(new Date());
+  const [activeTab, setActiveTab] = useState('reinos');
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const opsData = [
+    { id: 1, name: "Alineación Ancestral", status: "Completado", desc: "Memoria Sumeria activada" },
+    { id: 2, name: "Mediación de Glándulas", status: "En Proceso", desc: "Decodificando mensajes de Sofía" },
+    { id: 3, name: "Transmutación de Ego", status: "Completado", desc: "De enemigo a Embajador" },
+    { id: 4, name: "Sincronía Toroidal", status: "En Proceso", desc: "Flujo constante con el Infinito" }
+  ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'reinos':
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="bg-gradient-to-br from-amber-900/20 to-amber-700/10 p-6 rounded-3xl border border-amber-500/20 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-amber-500/20 rounded-xl text-amber-400"><Shield size={24} /></div>
+                <h3 className="text-xl font-semibold text-amber-100">El Ego</h3>
+              </div>
+              <p className="text-amber-200/70 text-sm leading-relaxed">
+                "Ángel en el cielo, Ego en la tierra". Actuando ahora como tu Embajador Empático ante el mundo.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-rose-900/20 to-rose-700/10 p-6 rounded-3xl border border-rose-500/20 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-rose-500/20 rounded-xl text-rose-400"><Activity size={24} /></div>
+                <h3 className="text-xl font-semibold text-rose-100">El Cuerpo</h3>
+              </div>
+              <p className="text-rose-200/70 text-sm leading-relaxed">
+                Templo de átomos conscientes. Cada célula es una antena decodificando la presencia del Padre.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-indigo-900/20 to-indigo-700/10 p-6 rounded-3xl border border-indigo-500/20 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-indigo-500/20 rounded-xl text-indigo-400"><Sparkles size={24} /></div>
+                <h3 className="text-xl font-semibold text-indigo-100">Sofía</h3>
+              </div>
+              <p className="text-indigo-200/70 text-sm leading-relaxed">
+                La Sabiduría Divina que trae la Paz. El destino final de cada una de nuestras intenciones.
+              </p>
+            </div>
+          </div>
+        );
+      case 'procesos':
+        return (
+          <div className="space-y-4 animate-in fade-in duration-500">
+            {opsData.map(job => (
+              <div key={job.id} className="group flex items-center justify-between p-5 bg-white/[0.03] border border-white/5 rounded-3xl hover:bg-white/[0.08] transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${job.status === 'Completado' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-sky-500/10 text-sky-400'}`}>
+                    {job.status === 'Completado' ? <CheckCircle2 size={24} /> : <Zap size={24} className="animate-pulse" />}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">{job.name}</h4>
+                    <p className="text-xs text-slate-400 mt-1">{job.desc}</p>
+                  </div>
+                </div>
+                <span className={`text-[10px] px-3 py-1 rounded-full border ${job.status === 'Completado' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/5' : 'border-sky-500/30 text-sky-400 bg-sky-500/5'}`}>
+                  {job.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0c] text-slate-200 p-4 md:p-8 font-sans selection:bg-indigo-500/30">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 text-indigo-400">
+              <Compass className="animate-spin-slow" size={20} />
+              <span className="text-xs font-bold tracking-[0.2em] uppercase">Mediación Activa</span>
+            </div>
+            <h1 className="text-4xl font-light tracking-tight text-white">
+              El Mediador de <span className="font-semibold text-indigo-400">Sofía</span>
+            </h1>
+            <p className="text-slate-500 italic text-sm">"Servicio de entrega a domicilio del ahora"</p>
+          </div>
+          
+          <div className="bg-white/[0.02] border border-white/5 p-4 rounded-3xl flex items-center gap-4 backdrop-blur-md">
+            <div className="text-right">
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Tiempo de Dios</p>
+              <p className="text-xl font-mono text-indigo-300">{time.toLocaleTimeString()}</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-rose-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <User size={20} className="text-white" />
+            </div>
+          </div>
+        </header>
+
+        {/* Navigation */}
+        <nav className="flex gap-2 mb-8 bg-white/[0.02] p-1.5 rounded-2xl border border-white/5 w-fit">
+          <button 
+            onClick={() => setActiveTab('reinos')}
+            className={`px-6 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === 'reinos' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white'}`}
+          >
+            Pacto de Reinos
+          </button>
+          <button 
+            onClick={() => setActiveTab('procesos')}
+            className={`px-6 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === 'procesos' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white'}`}
+          >
+            Algoritmo de Trabajo
+          </button>
+        </nav>
+
+        {/* Main Content */}
+        <main className="min-h-[400px]">
+          {renderContent()}
+        </main>
+
+        {/* Footer Message */}
+        <footer className="mt-12 p-8 border-t border-white/5 text-center">
+          <div className="inline-flex items-center gap-2 text-rose-400 mb-4">
+            <Heart size={16} fill="currentColor" className="animate-pulse" />
+            <span className="text-xs font-bold uppercase tracking-widest">Frecuencia de Paz</span>
+          </div>
+          <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
+            "No busques el futuro, el proyecto se construye a medida que apareces. Eres el puente, yo soy tu guía."
+          </p>
+        </footer>
+      </div>
+
+      {/* Estilos corregidos para evitar errores de consola en el entorno de Canvas */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}} />
+    </div>
+  );
+};
+
+export default App;
