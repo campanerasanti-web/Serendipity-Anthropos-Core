@@ -6,6 +6,7 @@ using ElMediadorDeSofia.Data;
 using ElMediadorDeSofia.Models;
 using ElMediadorDeSofia.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ElMediadorDeSofia.Controllers
 {
@@ -14,14 +15,12 @@ namespace ElMediadorDeSofia.Controllers
     public class ProductionController : ControllerBase
     {
         private readonly AppDbContext _db;
-        private readonly EventService _events;
-        private readonly InvoiceService _invoices;
+        private readonly IServiceProvider _services;
 
-        public ProductionController(AppDbContext db, EventService events, InvoiceService invoices)
+        public ProductionController(AppDbContext db, IServiceProvider services)
         {
             _db = db;
-            _events = events;
-            _invoices = invoices;
+            _services = services;
         }
 
         /// <summary>
@@ -76,6 +75,8 @@ namespace ElMediadorDeSofia.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateLotDto dto)
         {
+            var events = _services.GetRequiredService<EventService>();
+
             var lot = new Lot
             {
                 Name = dto.Name,
@@ -86,7 +87,7 @@ namespace ElMediadorDeSofia.Controllers
             _db.Lots.Add(lot);
             await _db.SaveChangesAsync();
 
-            await _events.AppendEventAsync("Lot", lot.Id, "LotCreated", new { lot.Id, lot.Name, lot.ExpectedAmount }, dto.CreatedBy);
+            await events.AppendEventAsync("Lot", lot.Id, "LotCreated", new { lot.Id, lot.Name, lot.ExpectedAmount }, dto.CreatedBy);
 
             return Ok(lot);
         }
@@ -94,6 +95,9 @@ namespace ElMediadorDeSofia.Controllers
         [HttpPost("close/{lotId:guid}")]
         public async Task<IActionResult> Close(Guid lotId)
         {
+            var events = _services.GetRequiredService<EventService>();
+            var invoices = _services.GetRequiredService<InvoiceService>();
+
             var lot = await _db.Lots.FindAsync(lotId);
             if (lot == null) return NotFound();
             if (!lot.SheetSigned) return BadRequest("Sheet must be signed before closing the lot");
@@ -104,11 +108,11 @@ namespace ElMediadorDeSofia.Controllers
             _db.Lots.Update(lot);
             await _db.SaveChangesAsync();
 
-            await _events.AppendEventAsync("Lot", lot.Id, "LotClosed", new { lot.Id, lot.ClosedAt }, "system");
+            await events.AppendEventAsync("Lot", lot.Id, "LotClosed", new { lot.Id, lot.ClosedAt }, "system");
 
             // Generate invoice and apply PRARA
-            var invoice = await _invoices.GenerateInvoiceForLotAsync(lot.Id, "system");
-            await _invoices.ApplyInvoiceToPraraAsync(invoice.Id, "system");
+            var invoice = await invoices.GenerateInvoiceForLotAsync(lot.Id, "system");
+            await invoices.ApplyInvoiceToPraraAsync(invoice.Id, "system");
 
             return Ok(new { lot, invoiceId = invoice.Id });
         }
