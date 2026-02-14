@@ -239,7 +239,8 @@ const generateFinancialAgent = (
 // ===============================
 
 async function submitManualData(formData: FormData) {
-  const res = await fetch('/api/manual-input', {
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const res = await fetch(`${baseUrl}/api/manual-input`, {
     method: 'POST',
     body: formData,
   });
@@ -248,7 +249,8 @@ async function submitManualData(formData: FormData) {
 }
 
 async function runFullCheckup() {
-  const res = await fetch('/api/anthropos/run', {
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const res = await fetch(`${baseUrl}/api/anthropos/run`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });

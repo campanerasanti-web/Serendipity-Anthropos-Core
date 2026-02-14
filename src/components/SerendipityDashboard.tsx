@@ -116,7 +116,8 @@ export const SerendipityDashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/serendipity/dashboard');
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/api/serendipity/dashboard`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch dashboard data');
