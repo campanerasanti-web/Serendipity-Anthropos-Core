@@ -20,6 +20,11 @@ namespace ElMediadorDeSofia.Services.Sofia
         private double _averageLatency = 0;
         private int _requestsPerSecond = 0;
 
+        // CPU tracking for accurate calculation
+        private DateTime _lastCpuCheck = DateTime.UtcNow;
+        private TimeSpan _lastTotalProcessorTime = Process.GetCurrentProcess().TotalProcessorTime;
+        private double _currentCpuUsage = 0;
+
         // Umbrales
         private const int NORMAL_LATENCY = 100;      // ms
         private const int WARNING_LATENCY = 500;     // ms
@@ -119,13 +124,28 @@ namespace ElMediadorDeSofia.Services.Sofia
         {
             try
             {
-                // PerformanceCounter no está disponible en Linux/Docker
-                // var cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-                // cpuCounter.NextValue();
-                // return cpuCounter.NextValue();
+                var now = DateTime.UtcNow;
+                var totalProcessorTime = _currentProcess.TotalProcessorTime;
                 
-                // Fallback: usar Process CPU
-                return _currentProcess.TotalProcessorTime.TotalMilliseconds / Environment.ProcessorCount;
+                // Calculate elapsed time
+                var timeElapsed = now - _lastCpuCheck;
+                if (timeElapsed.TotalMilliseconds == 0) return _currentCpuUsage;
+                
+                // Calculate CPU usage percentage
+                var totalProcessorTimeDiff = totalProcessorTime - _lastTotalProcessorTime;
+                var cpuUsageTotal = totalProcessorTimeDiff.TotalMilliseconds / timeElapsed.TotalMilliseconds;
+                
+                // Average across all processors
+                _currentCpuUsage = (cpuUsageTotal / Environment.ProcessorCount) * 100;
+                
+                // Clamp to 0-100 range
+                _currentCpuUsage = Math.Max(0, Math.Min(100, _currentCpuUsage));
+                
+                // Update for next calculation
+                _lastCpuCheck = now;
+                _lastTotalProcessorTime = totalProcessorTime;
+                
+                return _currentCpuUsage;
             }
             catch
             {
