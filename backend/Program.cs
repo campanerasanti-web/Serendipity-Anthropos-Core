@@ -197,6 +197,61 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
     .WithName("HealthCheck");
 
+// ========================
+// Autonomic System Endpoints (Mini endpoints for frontend dashboard)
+// ========================
+
+// Hermetic Health - Cuerpo Digital Hermético
+app.MapGet("/api/hermetic/health", () => Results.Ok(new 
+{ 
+    healthScore = 87,
+    systemHealths = new 
+    {
+        mentalismo = 88,
+        correspondencia = 92,
+        vibracion = 75,
+        polaridad = 90,
+        ritmo = 85,
+        causalidad = 80,
+        generacion = 78
+    },
+    timestamp = DateTime.UtcNow
+}))
+.WithName("HermeticHealth");
+
+// Production WIP - Trabajos en progreso
+app.MapGet("/api/production/wip", () => Results.Ok(new[] 
+{
+    new { id = "LOT-001", name = "Pedido Solar", expectedAmount = 50000000, sheetSigned = true, status = "in_progress" },
+    new { id = "LOT-002", name = "Componentes Eléctricos", expectedAmount = 30000000, sheetSigned = false, status = "pending_review" },
+    new { id = "LOT-003", name = "Estructuras Metálicas", expectedAmount = 75000000, sheetSigned = true, status = "in_progress" }
+}))
+.WithName("ProductionWIP");
+
+// Unified Dashboard - Dashboard unificado
+app.MapGet("/api/unified-dashboard", () => Results.Ok(new 
+{
+    financial = new 
+    {
+        totalRevenue = 2500000000m,
+        totalExpenses = 1200000000m,
+        netProfit = 1300000000m,
+        currency = "VND"
+    },
+    operations = new 
+    {
+        lotsInProgress = 3,
+        ordersCompleted = 24,
+        averageCompletionTime = "8.5 days"
+    },
+    health = new 
+    {
+        systemScore = 87,
+        timestamp = DateTime.UtcNow
+    }
+}))
+.WithName("UnifiedDashboard");
+
 app.UseRouting();
 app.UseCors();
 app.UseAuthorization();
