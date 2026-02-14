@@ -296,8 +296,7 @@ export default function ZenDashboard() {
                     <tr
                       key={idx}
                       style={{
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                        hover: { background: 'rgba(59, 130, 246, 0.1)' }
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
                       }}
                     >
                       <td style={{ padding: '0.75rem' }}>{metric.time}</td>

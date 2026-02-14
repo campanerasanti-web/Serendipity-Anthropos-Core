@@ -24,8 +24,12 @@ interface UseAutonomicBodyReturn {
 }
 
 export function useAutonomicBody(): UseAutonomicBodyReturn {
-  const [health, setHealth] = useState({
-    status: 'healthy' as const,
+  const [health, setHealth] = useState<{
+    status: 'healthy' | 'degraded' | 'critical';
+    responseTime: number;
+    lastError?: string;
+  }>({
+    status: 'healthy',
     responseTime: 0,
     lastError: undefined
   });
@@ -47,7 +51,7 @@ export function useAutonomicBody(): UseAutonomicBodyReturn {
       });
 
       setHealth({
-        status: newHealth.status,
+        status: newHealth.status as 'healthy' | 'degraded' | 'critical',
         responseTime: newHealth.responseTime,
         lastError: newHealth.lastError
       });
@@ -67,7 +71,10 @@ export function useAutonomicBody(): UseAutonomicBodyReturn {
     // Actualiza órganos inicialmente
     setOrgans(system.getOrgans());
 
-    return unsubscribe;
+    return () => {
+      console.log('🫀 useAutonomicBody: Limpiando listeners...');
+      unsubscribe();
+    };
   }, []);
 
   const syncNow = useCallback(async () => {

@@ -36,6 +36,8 @@ export interface TodaysInsight {
   recommendation: string;
   urgency: 'critical' | 'high' | 'medium' | 'low';
   icon?: string;
+  narrative?: string;
+  confidence_score?: number;
 }
 
 // Period Analytics
@@ -89,6 +91,15 @@ export interface AnthroposReport {
   logs?: string[];
   operationalStatus: 'healthy' | 'warning' | 'critical';
   nextCheckup?: string;
+  system_mood?: string;
+  heart_coherence?: number;
+  emotional_load?: number;
+  operational_load?: number;
+  drought_points?: string[];
+  sophia_insights?: string[];
+  security_risks?: string[];
+  full_cycle?: boolean;
+  last_sync_time?: string;
 }
 
 // Manual Input Payload

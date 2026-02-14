@@ -30,13 +30,13 @@ import {
 import type {
   DashboardStats,
   MetricDay,
-  CashFlowPrediction,
   DailyInsight,
   PeriodAnalytics,
   RecommendationItem,
   AlertItem,
   FinancialAgentAnalysis,
 } from '../types/dashboard';
+import type { Stats, Metric, Prediction } from '../types';
 import { SophiaMessageCard, SophiaStats } from '../components/SophiaMessageCard';
 import { PillarConstellation } from '../components/PillarConstellation';
 
@@ -154,9 +154,9 @@ const LoadingAgent: React.FC<{ label?: string }> = ({ label = 'Analizando...' })
 // ===============================
 
 const generateFinancialAgent = (
-  stats: DashboardStats | undefined,
-  metrics: MetricDay[] | undefined,
-  prediction: CashFlowPrediction | undefined
+  stats: Stats | undefined,
+  metrics: Array<Metric | MetricDay> | undefined,
+  prediction: Prediction | undefined
 ): FinancialAgentAnalysis => {
   const recommendations: RecommendationItem[] = [];
   const alerts: AlertItem[] = [];
@@ -203,8 +203,9 @@ const generateFinancialAgent = (
 
   if (metrics && metrics.length > 1) {
     const recent = metrics.slice(-7);
-    const avg = recent.reduce((s: number, m: MetricDay) => s + (m.daily_profit || 0), 0) / recent.length;
-    const trend = recent[recent.length - 1].daily_profit > avg ? 'mejorando' : 'empeorando';
+    const avg = recent.reduce((s: number, m) => s + ((m as MetricDay).daily_profit || 0), 0) / recent.length;
+    const lastProfit = (recent[recent.length - 1] as MetricDay).daily_profit || 0;
+    const trend = lastProfit > avg ? 'mejorando' : 'empeorando';
 
     recommendations.push({
       title: trend === 'mejorando' ? '📈 Tendencia positiva' : '📉 Tendencia negativa',
@@ -264,7 +265,7 @@ export default function IntelligentDashboard() {
 
   const { data: stats, isLoading: loadingStats } = useQuery({
     queryKey: ['dashboard'],
-    queryFn: () => fetchUnifiedDashboard(new Date().getMonth() + 1, new Date().getFullYear()),
+    queryFn: () => fetchUnifiedDashboard(),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -276,7 +277,7 @@ export default function IntelligentDashboard() {
 
   const { data: prediction, isLoading: loadingPrediction } = useQuery({
     queryKey: ['prediction'],
-    queryFn: () => fetchCashFlowPrediction(new Date().getMonth() + 1, new Date().getFullYear()),
+    queryFn: fetchCashFlowPrediction,
     staleTime: 60 * 60 * 1000,
   });
 
@@ -288,12 +289,7 @@ export default function IntelligentDashboard() {
 
   const { data: periodAnalytics, isLoading: loadingPeriod } = useQuery({
     queryKey: ['period'],
-    queryFn: () => {
-      const now = new Date();
-      const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-      const endDate = now.toISOString().split('T')[0];
-      return fetchPeriodAnalytics(startDate, endDate);
-    },
+    queryFn: fetchPeriodAnalytics,
     staleTime: 60 * 60 * 1000,
   });
 

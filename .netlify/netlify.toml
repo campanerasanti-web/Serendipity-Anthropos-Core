@@ -7,10 +7,11 @@ redirects = []
 [functions."*"]
 
 [build]
-publish = "C:\\Users\\santiago campanera\\OneDrive\\Desktop\\codigo\\dist"
+publish = "dist"
 publishOrigin = "ui"
 commandOrigin = "ui"
 command = "npm run build"
+base = "."
 
 [build.environment]
 

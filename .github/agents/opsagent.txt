@@ -1,0 +1,151 @@
+/OpsAgents/
+  OpsGardenerAgent.ts
+  OpsGardenerRules.ts
+  OpsGardenerTasks.ts
+  OpsGardenerReport.ts
+  README.md
+import { rules } from "./OpsGardenerRules";
+import { tasks } from "./OpsGardenerTasks";
+import { OpsGardenerReport } from "./OpsGardenerReport";
+
+export type OpsMode = "audit" | "repair" | "harmonize" | "full";
+
+export class OpsGardenerAgent {
+  constructor(
+    private config: {
+      mode: OpsMode;
+      autoFix?: boolean;
+    }
+  ) {}
+
+  async run() {
+    const results = [];
+
+    for (const rule of rules) {
+      const validation = await rule.validate();
+      results.push({ rule, validation });
+
+      if (!validation.passed && this.config.autoFix && rule.autoFix) {
+        const fix = await rule.autoFix();
+        results.push({ fix });
+      }
+    }
+
+    for (const task of tasks) {
+      if (this.shouldRunTask(task.category)) {
+        const result = await task.execute();
+        results.push({ task, result });
+      }
+    }
+
+    const report = new OpsGardenerReport(results);
+    await report.generate();
+
+    return results;
+  }
+
+  private shouldRunTask(category: string) {
+    if (this.config.mode === "audit") return category === "audit";
+    if (this.config.mode === "repair") return ["audit", "repair"].includes(category);
+    if (this.config.mode === "harmonize") return ["audit", "harmonize"].includes(category);
+    return true; // full
+  }
+}
+export const rules = [
+  {
+    id: "FLOW-001",
+    name: "Todo flujo operativo debe tener dueño",
+    severity: "critical",
+    category: "flow",
+    validate: async () => {
+      // Ejemplo: revisar JSON de procesos
+      return { passed: false, message: "Proceso 'Packing' no tiene responsable asignado." };
+    },
+    autoFix: async () => {
+      return {
+        success: true,
+        message: "Se generó un placeholder de responsable para 'Packing'.",
+        filesAffected: ["ops/processes/packing.json"]
+      };
+    }
+  },
+
+  {
+    id: "CULT-002",
+    name: "Los rituales deben estar documentados",
+    severity: "warning",
+    category: "culture",
+    validate: async () => {
+      return { passed: false, message: "Falta documentación del ritual 'Cierre de Jornada'." };
+    }
+  },
+
+  {
+    id: "ALIGN-001",
+    name: "Backend, frontend y operaciones deben compartir lenguaje",
+    severity: "info",
+    category: "alignment",
+    validate: async () => {
+      return { passed: true, message: "Lenguaje consistente detectado." };
+    }
+  }
+];
+export const tasks = [
+  {
+    id: "TASK-FLOWMAP",
+    name: "Mapear flujos operativos",
+    category: "audit",
+    priority: "high",
+    execute: async () => {
+      return {
+        success: true,
+        message: "Se generó un mapa preliminar de 7 flujos operativos.",
+        filesAffected: ["ops/flowmap.json"]
+      };
+    }
+  },
+
+  {
+    id: "TASK-HARMONIZE-LANGUAGE",
+    name: "Armonizar lenguaje entre áreas",
+    category: "harmonize",
+    priority: "medium",
+    execute: async () => {
+      return {
+        success: true,
+        message: "Se normalizaron 12 términos entre backend y operaciones."
+      };
+    }
+  }
+];
+export class OpsGardenerReport {
+  constructor(private results: any[]) {}
+
+  async generate() {
+    const summary = this.buildSummary();
+    console.log(summary);
+    await this.writeMarkdown(summary);
+  }
+
+  private buildSummary() {
+    return `
+═══════════════════════════════════════════════════════
+🛡️  INFORME DEL AGENTE JARDINERO DE OPERACIONES
+═══════════════════════════════════════════════════════
+
+📊 ESTADO GENERAL: 🟡 EN PROCESO DE ARMONIZACIÓN
+
+Reglas evaluadas: ${this.results.length}
+Recomendaciones generadas: ${this.results.filter(r => r.validation && !r.validation.passed).length}
+
+${this.results
+  .map(r => `• ${r.rule?.id || r.task?.id}: ${r.validation?.message || r.result?.message}`)
+  .join("\n")}
+`;
+  }
+
+  private async writeMarkdown(content: string) {
+    // escribir archivo
+  }
+}
+[Sensores físicos] → [Gateway IoT] → [MQTT Broker] → [Backend Serendipity] → [Agente Jardinero]

@@ -154,7 +154,7 @@ export default function TemploInterior() {
 // ============================================================
 
 interface MoodCardProps {
-  mood: 'fertile' | 'stressed' | 'fragmented' | 'flowing' | string;
+  mood?: 'fertile' | 'stressed' | 'fragmented' | 'flowing' | string;
 }
 
 function MoodCard({ mood }: MoodCardProps) {
@@ -190,7 +190,7 @@ function MoodCard({ mood }: MoodCardProps) {
         <span className="text-5xl">{moodEmoji[mood as keyof typeof moodEmoji] || '❓'}</span>
         <div>
           <p className={`text-3xl font-bold ${moodColor[mood as keyof typeof moodColor]}`}>
-            {mood.toUpperCase()}
+            {(mood || 'desconocido').toUpperCase()}
           </p>
           <p className="text-sm text-gray-300 mt-1">
             {moodDesc[mood as keyof typeof moodDesc] || 'Estado desconocido'}
@@ -202,11 +202,12 @@ function MoodCard({ mood }: MoodCardProps) {
 }
 
 interface CoherenceCardProps {
-  coherence: number;
+  coherence?: number;
 }
 
 function CoherenceCard({ coherence }: CoherenceCardProps) {
-  const getStatus = (val: number) => {
+  const getStatus = (val: number | undefined) => {
+    if (!val) return { label: 'Desconocida', color: 'text-gray-400', bg: 'bg-gray-400/20' };
     if (val >= 80) return { label: 'Excelente', color: 'text-green-400', bg: 'bg-green-400/20' };
     if (val >= 60) return { label: 'Buena', color: 'text-blue-400', bg: 'bg-blue-400/20' };
     if (val >= 40) return { label: 'Regular', color: 'text-yellow-400', bg: 'bg-yellow-400/20' };
@@ -214,6 +215,7 @@ function CoherenceCard({ coherence }: CoherenceCardProps) {
   };
 
   const status = getStatus(coherence);
+  const coherenceValue = coherence ?? 0;
 
   return (
     <div className="bg-slate-700/50 backdrop-blur rounded-lg p-6 border border-slate-600 hover:border-cyan-500 transition">
@@ -224,7 +226,9 @@ function CoherenceCard({ coherence }: CoherenceCardProps) {
 
       <div className="space-y-3">
         <div className="flex items-end justify-between">
-          <span className={`text-4xl font-bold ${status.color}`}>{coherence}%</span>
+          <span className={`text-4xl font-bold ${status.color}`}>
+            {coherence !== undefined ? `${coherence}%` : 'N/A'}
+          </span>
           <span className={`text-sm font-bold px-3 py-1 rounded ${status.bg} ${status.color}`}>
             {status.label}
           </span>
@@ -233,11 +237,11 @@ function CoherenceCard({ coherence }: CoherenceCardProps) {
         <div className="w-full bg-slate-600 rounded-full h-3">
           <div
             className={`h-3 rounded-full transition-all ${
-              coherence >= 80 ? 'bg-green-500' :
-              coherence >= 60 ? 'bg-blue-500' :
-              coherence >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+              coherenceValue >= 80 ? 'bg-green-500' :
+              coherenceValue >= 60 ? 'bg-blue-500' :
+              coherenceValue >= 40 ? 'bg-yellow-500' : 'bg-red-500'
             }`}
-            style={{ width: `${coherence}%` }}
+            style={{ width: `${coherenceValue}%` }}
           />
         </div>
 
@@ -250,11 +254,11 @@ function CoherenceCard({ coherence }: CoherenceCardProps) {
 }
 
 interface LoadCardProps {
-  emotional: number;
-  operational: number;
+  emotional?: number;
+  operational?: number;
 }
 
-function LoadCard({ emotional, operational }: LoadCardProps) {
+function LoadCard({ emotional = 0, operational = 0 }: LoadCardProps) {
   return (
     <div className="bg-slate-700/50 backdrop-blur rounded-lg p-6 border border-slate-600 hover:border-amber-500 transition">
       <div className="flex items-center gap-3 mb-4">
@@ -300,7 +304,7 @@ function LoadCard({ emotional, operational }: LoadCardProps) {
 }
 
 interface DroughtCardProps {
-  droughtPoints: string[];
+  droughtPoints?: string[];
 }
 
 function DroughtCard({ droughtPoints }: DroughtCardProps) {
@@ -328,7 +332,7 @@ function DroughtCard({ droughtPoints }: DroughtCardProps) {
 }
 
 interface InsightsCardProps {
-  insights: Array<{ category: string; insight: string }>;
+  insights?: string[] | { category: string; insight: string }[];
 }
 
 function InsightsCard({ insights }: InsightsCardProps) {
@@ -349,14 +353,19 @@ function InsightsCard({ insights }: InsightsCardProps) {
 
       {insights && insights.length > 0 ? (
         <div className="space-y-3">
-          {insights.map((item, idx) => (
+          {insights.map((item, idx) => {
+            const isString = typeof item === 'string';
+            return (
             <div key={idx} className="bg-slate-600/50 rounded p-3 border border-slate-500">
-              <p className="text-xs text-gray-400 mb-1">
-                {getCategoryIcon(item.category)} {item.category}
-              </p>
-              <p className="text-sm text-white">{item.insight}</p>
+              {!isString && (
+                <p className="text-xs text-gray-400 mb-1">
+                  {getCategoryIcon((item as any).category)} {(item as any).category}
+                </p>
+              )}
+              <p className="text-sm text-white">{isString ? item : (item as any).insight}</p>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <p className="text-sm text-gray-400">Sophia está observando...</p>
@@ -366,7 +375,7 @@ function InsightsCard({ insights }: InsightsCardProps) {
 }
 
 interface RisksCardProps {
-  risks: Array<{ risk: string; severity: 'low' | 'medium' | 'high' | 'critical' }>;
+  risks?: Array<{ risk: string; severity: 'low' | 'medium' | 'high' | 'critical' }> | string[];
 }
 
 function RisksCard({ risks }: RisksCardProps) {
@@ -386,14 +395,19 @@ function RisksCard({ risks }: RisksCardProps) {
 
       {risks && risks.length > 0 ? (
         <div className="space-y-2">
-          {risks.map((item, idx) => (
-            <div key={idx} className="flex items-start gap-2">
-              <span className={`text-xs font-bold px-2 py-1 rounded whitespace-nowrap mt-0.5 ${getSeverityColor(item.severity)}`}>
-                {item.severity.toUpperCase()}
-              </span>
-              <p className="text-sm text-gray-300">{item.risk}</p>
-            </div>
-          ))}
+          {risks.map((item, idx) => {
+            const isString = typeof item === 'string';
+            const severity = isString ? 'low' : item.severity;
+            const label = isString ? item : item.risk;
+            return (
+              <div key={idx} className="flex items-start gap-2">
+                <span className={`text-xs font-bold px-2 py-1 rounded whitespace-nowrap mt-0.5 ${getSeverityColor(severity)}`}>
+                  {severity.toUpperCase()}
+                </span>
+                <p className="text-sm text-gray-300">{label}</p>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <p className="text-sm text-green-400">✓ Sistema seguro</p>

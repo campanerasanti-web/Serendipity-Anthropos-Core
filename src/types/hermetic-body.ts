@@ -369,6 +369,14 @@ export interface SafetyCheck {
   alternativeSuggestion?: Action;
 }
 
+export interface CausalEvent {
+  id: string;
+  action: Action;
+  effects: Effect[];
+  timestamp: Date;
+  chainDepth: number;
+}
+
 /**
  * NIVEL 7: GENERACIÓN (Raíz - 396 Hz)
  * "Todo Tiene Masculino y Femenino - La Síntesis Crea"
@@ -479,8 +487,8 @@ export interface DigitalBody {
   getHealthScore(): number;
   
   // Activación y desactivación
-  async awakening(): Promise<void>;
-  async sleep(): Promise<void>;
+  awakening(): Promise<void>;
+  sleep(): Promise<void>;
 }
 
 export interface DigitalBodyDiagnosis {

@@ -43,8 +43,8 @@ export default function SofiaDashboard() {
   }, []);
 
   const { data: stats, isLoading: statsLoading, isError: statsError } = useQuery({
-    queryKey: ['dashboard', 2, 2026],
-    queryFn: () => fetchUnifiedDashboard(2, 2026),
+    queryKey: ['dashboard'],
+    queryFn: () => fetchUnifiedDashboard(),
     retry: 2,
     staleTime: 5 * 60 * 1000,
   });
@@ -287,10 +287,12 @@ export default function SofiaDashboard() {
                 color="purple"
                 variant="bordered"
               >
-                <span className="text-sm font-semibold text-purple-300 block mb-2">
-                  Confianza: {(insight.confidence_score * 100).toFixed(0)}%
-                </span>
-                <p className="text-lg italic text-gray-200">"{insight.narrative}"</p>
+                {insight?.confidence_score !== undefined && (
+                  <span className="text-sm font-semibold text-purple-300 block mb-2">
+                    Confianza: {(insight.confidence_score * 100).toFixed(0)}%
+                  </span>
+                )}
+                <p className="text-lg italic text-gray-200">"{insight?.narrative || insight?.recommendation}"</p>
               </Card>
             </div>
           )}

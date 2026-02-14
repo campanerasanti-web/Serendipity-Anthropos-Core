@@ -1,0 +1,31 @@
+name: Night Watch
+
+on:
+  schedule:
+    # Runs daily at 02:00 UTC. Adjust to your local time if needed.
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  night-watch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run night watch ritual
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run ops:watch
