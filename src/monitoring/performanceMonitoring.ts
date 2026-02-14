@@ -16,9 +16,10 @@ export const initializePerformanceMonitoring = () => {
       }),
     ],
     tracesSampleRate: import.meta.env.DEV ? 1.0 : 0.1,
-    profiles SampleRate: import.meta.env.DEV ? 1.0 : 0.1,
+    profilesSampleRate: import.meta.env.DEV ? 1.0 : 0.1,
     environment: import.meta.env.MODE,
     release: '1.0.0',
+    sendDefaultPii: true,
   });
 
   console.log('✅ Sentry initialized for error tracking');

@@ -29,6 +29,9 @@
     "ops:assign": "tsx scripts/assign-flow-owners.ts"
   },
   "dependencies": {
+    "@sentry/react": "^10.38.0",
+    "@sentry/tracing": "^7.120.4",
+    "@sentry/vite-plugin": "^4.9.1",
     "@supabase/supabase-js": "^2.39.7",
     "@tanstack/react-query": "^5.28.0",
     "axios": "^1.13.5",

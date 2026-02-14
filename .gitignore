@@ -118,3 +118,6 @@ sales-pipeline/
 DataAgents/
 tests/
 docs/
+
+# Sentry Config File
+.env.sentry-build-plugin

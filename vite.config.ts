@@ -1,8 +1,12 @@
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), sentryVitePlugin({
+    org: "serendipity-bros",
+    project: "serendipity-anthropos-core"
+  })],
   build: {
     rollupOptions: {
       // Filtrar advertencias repetitivas proviniendo de dependencias (por ejemplo: "use client")
@@ -25,6 +29,8 @@ export default defineConfig({
           }
         }
       }
-    }
+    },
+
+    sourcemap: true
   }
 })
