@@ -111,18 +111,32 @@ namespace ElMediadorDeSofia.Controllers
 
         /// <summary>
         /// Obtener todo: Financial + Team + Alerts + Recommendations (respuesta completa)
+        /// Formateado para sincronización con cliente móvil
         /// </summary>
         [HttpGet("dashboard")]
         public ActionResult GetDashboard()
         {
             try
             {
+                var financialState = _serendipityService.GetFinancialState();
+                
                 return Ok(new
                 {
                     success = true,
+                    financial = new
+                    {
+                        totalIncome = financialState.TotalMonthlyRevenue,
+                        totalExpenses = financialState.TotalMonthlyExpenses,
+                        cashFlow = financialState.GrossMargin,
+                        forecast = (long)(financialState.GrossMargin * 1.05), // 5% projection
+                        payroll = financialState.Payroll,
+                        margin = financialState.GrossMarginPercentage,
+                        praraPercentage = financialState.PraraPercentage,
+                        customerCount = financialState.CustomerCount,
+                        employeeCount = financialState.EmployeeCount
+                    },
                     data = new
                     {
-                        financial = _serendipityService.GetFinancialState(),
                         team = _serendipityService.GetTeamWithSalaries(),
                         alerts = _serendipityService.GetEthicalAlerts(),
                         recommendations = _serendipityService.GetLightRecommendations()

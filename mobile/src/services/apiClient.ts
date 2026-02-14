@@ -31,10 +31,22 @@ class MobileApiClient {
     try {
       if (!this.isOnline) throw new Error('No internet connection');
       const response = await this.client.get('/api/serendipity/dashboard');
+      
+      if (!response.data) {
+        throw new Error('Empty response from dashboard endpoint');
+      }
+      
+      // Verify expected structure
+      if (!response.data.financial) {
+        console.warn('Dashboard response missing financial data:', response.data);
+        throw new Error('Dashboard response structure invalid');
+      }
+      
       return response.data;
-    } catch (error) {
-      console.error('Dashboard fetch failed:', error);
-      throw error;
+    } catch (error: any) {
+      const message = error.response?.data?.message || error.message || 'Dashboard fetch failed';
+      console.error('Dashboard fetch error:', message, 'Status:', error.response?.status);
+      throw new Error(message);
     }
   }
 

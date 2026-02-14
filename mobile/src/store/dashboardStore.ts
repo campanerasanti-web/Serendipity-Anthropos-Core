@@ -15,16 +15,27 @@ export interface DashboardState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
+  syncTimestamp: number | null;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
   financial: null,
   isLoading: false,
   error: null,
-  setFinancial: (data) => set({ financial: data }),
+  syncTimestamp: null,
+  setFinancial: (data) => set({ 
+    financial: data,
+    error: null,
+    syncTimestamp: Date.now()
+  }),
   setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error }),
-  reset: () => set({ financial: null, isLoading: false, error: null }),
+  setError: (error) => set({ error, isLoading: false }),
+  reset: () => set({ 
+    financial: null, 
+    isLoading: false, 
+    error: null,
+    syncTimestamp: null
+  }),
 }));
 
 export interface AgentState {

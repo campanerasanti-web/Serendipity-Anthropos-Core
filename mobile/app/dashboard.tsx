@@ -7,30 +7,56 @@ import { useDashboardStore } from '../store/dashboardStore';
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
-  const { financial, setFinancial } = useDashboardStore();
+  const [error, setError] = useState<string | null>(null);
+  const { financial, setFinancial, setError: setStoreError } = useDashboardStore();
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
         setLoading(true);
-        const data = await mobileApiClient.fetchSerendipityDashboard();
-        if (data?.financial) {
-          setFinancial(data.financial);
+        setError(null);
+        const response = await mobileApiClient.fetchSerendipityDashboard();
+        
+        // Verify data structure
+        if (response?.financial) {
+          const financialData = {
+            totalIncome: response.financial.totalIncome || 0,
+            totalExpenses: response.financial.totalExpenses || 0,
+            cashFlow: response.financial.cashFlow || 0,
+            forecast: response.financial.forecast || 0,
+          };
+          setFinancial(financialData);
+        } else {
+          throw new Error('Dashboard data structure mismatch');
         }
       } catch (error) {
-        console.error('Failed to load dashboard:', error);
+        const errorMsg = error instanceof Error ? error.message : 'Failed to load dashboard';
+        console.error('Dashboard fetch error:', errorMsg);
+        setError(errorMsg);
+        setStoreError(errorMsg);
       } finally {
         setLoading(false);
       }
     };
 
     loadDashboard();
-  }, [setFinancial]);
+  }, [setFinancial, setStoreError]);
 
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color="#10b981" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Sync Error</Text>
+          <Text style={styles.errorMessage}>{error}</Text>
+        </View>
       </View>
     );
   }
@@ -106,6 +132,23 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#10b981',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ef4444',
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: '#fca5a5',
+    textAlign: 'center',
   },
   card: {
     margin: 16,
