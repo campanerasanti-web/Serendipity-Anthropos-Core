@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import * as Sentry from '@sentry/react';
 
 type AgentId = 'ops_gardener' | 'security_gardener' | 'anthropos_core' | 'self_gardener';
 
@@ -110,6 +111,15 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
         }.`,
       },
     ]);
+
+    // 🔍 Sentry: Track agent activation
+    Sentry.setTag('active_agent', agentId);
+    Sentry.addBreadcrumb({
+      category: 'agent-action',
+      message: `Opened agent: ${profile?.name}`,
+      level: 'info',
+    });
+    Sentry.captureMessage(`Agent activated: ${profile?.name}`, 'info');
   };
 
   const sendMessage = async () => {
@@ -120,6 +130,12 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
     setMessages((prev) => [...prev, { role: 'user', text: userText || 'Envie un archivo.' }]);
     setInput('');
     setIsSending(true);
+
+    // 🔍 Start Sentry transaction for message handling
+    const transaction = Sentry.startSpan({
+      op: 'agent.sendMessage',
+      name: `${activeProfile.name}: Message Processing`,
+    });
 
     try {
       const payload = {
@@ -139,16 +155,37 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
         },
       };
 
+      // 🔍 Sentry: Track API request
+      const startTime = performance.now();
+      
       const response = await fetch('/api/assistant/next-step', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
+      const duration = performance.now() - startTime;
+
+      // Log API performance
+      Sentry.addBreadcrumb({
+        category: 'api',
+        message: `Assistant API: ${response.status} ${response.statusText}`,
+        level: response.ok ? 'info' : 'error',
+        data: { duration_ms: Math.round(duration) },
+      });
+
+      if (duration > 2000) {
+        Sentry.captureMessage(`⚠️ Slow assistant API response: ${duration.toFixed(0)}ms`, 'warning');
+      }
+
       let agentReply = '';
       if (response.ok) {
         const data = await response.json();
         agentReply = data?.nextStep?.message || data?.nextStep?.Message || '';
+      } else {
+        Sentry.captureException(new Error(`API Error: ${response.status} ${response.statusText}`), {
+          tags: { agent: activeProfile.name, endpoint: 'next-step' },
+        });
       }
 
       if (!agentReply) {
@@ -165,11 +202,42 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
             },
           })
         );
+
+        // 🔍 Track document upload
+        Sentry.addBreadcrumb({
+          category: 'document',
+          message: `Document sent to ${activeProfile.name}`,
+          data: {
+            file_name: attachment.name,
+            file_size: attachment.size,
+            file_type: attachment.type,
+          },
+        });
       }
 
       setMessages((prev) => [...prev, { role: 'agent', text: agentReply }]);
       setIdeaByAgent((prev) => ({ ...prev, [activeProfile.id]: true }));
+
+      // 🔍 Success event
+      Sentry.captureMessage(`Agent response: ${activeProfile.name}`, 'info');
+
     } catch (e) {
+      // 🔍 Capture exception with context
+      Sentry.captureException(e, {
+        tags: {
+          component: 'AgentsSidebar',
+          agent: activeProfile?.name,
+          has_attachment: !!attachment,
+        },
+        contexts: {
+          agent: {
+            id: activeProfile?.id,
+            name: activeProfile?.name,
+            message_length: userText.length,
+          },
+        },
+      });
+
       setMessages((prev) => [
         ...prev,
         {
@@ -179,6 +247,7 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
       ]);
       setIdeaByAgent((prev) => ({ ...prev, [activeProfile.id]: true }));
     } finally {
+      transaction?.end();
       setIsSending(false);
       setAttachment(null);
     }
@@ -188,6 +257,14 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
     const handleDocument = (event: Event) => {
       const detail = (event as CustomEvent).detail as { agentId?: AgentId } | undefined;
       if (!detail?.agentId) return;
+
+      // 🔍 Sentry: Track document received event
+      Sentry.addBreadcrumb({
+        category: 'document-event',
+        message: 'Garden document event received',
+        data: { agentId: detail.agentId },
+      });
+
       setIdeaByAgent((prev) => ({ ...prev, [detail.agentId as AgentId]: true }));
       if (detail.agentId === activeAgent) {
         setMessages((prev) => [
@@ -197,6 +274,8 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
             text: 'Idea registrada: recibi tu archivo y puedo extraer acciones o patrones cuando quieras.',
           },
         ]);
+
+        Sentry.captureMessage(`Document processed by agent: ${detail.agentId}`, 'info');
       }
     };
 
