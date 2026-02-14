@@ -7,12 +7,13 @@ import ZenDashboard from './components/ZenDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import VisualizationDashboard from './components/VisualizationDashboard';
 import HermeticBodyDashboard from './components/HermeticBodyDashboard';
+import SofiaAgentsDashboard from './components/SofiaAgentsDashboard';
 import { useQuery } from '@tanstack/react-query';
 import { fetchUnifiedDashboard, fetchLast30DaysMetrics, localDataService } from './services/queries';
 import { useAutonomicBody } from './hooks/useAutonomicBody';
-import { BarChart3, Settings, LayoutDashboard, Flame, Heart } from 'lucide-react';
+import { BarChart3, Settings, LayoutDashboard, Flame, Heart, Activity } from 'lucide-react';
 
-type Page = 'dashboard' | 'admin' | 'visualizations' | 'hermetic';
+type Page = 'dashboard' | 'admin' | 'visualizations' | 'hermetic' | 'sofia';
 
 const queryClient = new QueryClient();
 
@@ -100,6 +101,10 @@ const AppContent = () => {
             <Flame width={16} height={16} />
             Hermética
           </button>
+          <button onClick={() => setCurrentPage('sofia')} style={navButtonStyle(currentPage === 'sofia')}>
+            <Activity width={16} height={16} />
+            Sofia
+          </button>
           <button onClick={() => setCurrentPage('visualizations')} style={navButtonStyle(currentPage === 'visualizations')}>
             <BarChart3 width={16} height={16} />
             Visualizaciones
@@ -156,6 +161,7 @@ const AppContent = () => {
       <div style={{ background: 'linear-gradient(to bottom right, rgb(15, 23, 42), rgb(15, 23, 42), rgb(49, 46, 129))' }}>
         {currentPage === 'dashboard' && <ZenDashboard />}
         {currentPage === 'hermetic' && <HermeticBodyDashboard />}
+        {currentPage === 'sofia' && <SofiaAgentsDashboard />}
         {currentPage === 'admin' && <AdminDashboard />}
         {currentPage === 'visualizations' && <VisualizationDashboard metrics={metrics} invoices={invoices} fixedCosts={fixedCosts} />}
       </div>
