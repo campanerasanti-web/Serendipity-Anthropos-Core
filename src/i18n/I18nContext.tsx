@@ -91,20 +91,25 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
  * return <h1>{t.dashboard.title}</h1>;
  */
 export const useI18n = (): I18nContextType => {
-  const context = useContext(I18nContext);
-  if (!context) {
-    // Fallback: devuelve un contexto por defecto sin fallar
-    console.warn('⚠️ useI18n: No I18nProvider found. Returning defaults.');
-    return {
-      language: 'es',
-      currentLanguage: 'es',
-      t: translations['es'],
-      setLanguage: () => {},
-      setUserRole: () => {},
-      currentRole: 'admin',
-    };
+  try {
+    const context = useContext(I18nContext);
+    if (context) {
+      return context;
+    }
+  } catch (err) {
+    console.error('Error accessing I18nContext:', err);
   }
-  return context;
+  
+  // Fallback: devuelve un contexto por defecto sin fallar
+  console.warn('⚠️ useI18n: No I18nProvider found. Returning safe defaults.');
+  return {
+    language: 'es',
+    currentLanguage: 'es',
+    t: translations['es'] || { dashboard: { title: 'Dashboard' } },
+    setLanguage: () => console.warn('setLanguage called but no provider'),
+    setUserRole: () => console.warn('setUserRole called but no provider'),
+    currentRole: 'admin',
+  };
 };
 
 /**

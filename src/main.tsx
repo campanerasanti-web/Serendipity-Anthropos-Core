@@ -1,7 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import * as Sentry from '@sentry/react'
-import App from './App.tsx' // Explícitamente importar App.tsx
+import './i18n/I18nContext' // Initialize i18n context
+import App from './App.tsx' // Explicitly import App.tsx
 import { initializePerformanceMonitoring, trackWebVitals } from './monitoring/performanceMonitoring'
 import './index.css'
 
