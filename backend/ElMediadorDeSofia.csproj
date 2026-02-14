@@ -5,8 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>false</Deterministic>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>

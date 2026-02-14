@@ -195,8 +195,7 @@ if (app.Environment.IsDevelopment())
 
 // Health check endpoint for Render
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
-    .WithName("HealthCheck")
-    .WithOpenApi();
+    .WithName("HealthCheck");
 
 app.UseRouting();
 app.UseCors();

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace ElMediadorDeSofia.Services.Sofia
 {
@@ -118,9 +119,13 @@ namespace ElMediadorDeSofia.Services.Sofia
         {
             try
             {
-                var cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-                cpuCounter.NextValue();
-                return cpuCounter.NextValue();
+                // PerformanceCounter no está disponible en Linux/Docker
+                // var cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                // cpuCounter.NextValue();
+                // return cpuCounter.NextValue();
+                
+                // Fallback: usar Process CPU
+                return _currentProcess.TotalProcessorTime.TotalMilliseconds / Environment.ProcessorCount;
             }
             catch
             {
