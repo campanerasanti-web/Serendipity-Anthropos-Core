@@ -4,6 +4,8 @@
 // Updated to work with Express backend + Anthropos Core
 // Supports financial data, manual input, and super agent checkup
 
+import * as Sentry from '@sentry/react';
+import { supabase } from '../supabase/supabaseClient';
 import {
   Stats,
   Metric,
@@ -187,6 +189,135 @@ export const localDataService = {
       console.warn('Failed to fetch fixed costs:', e);
       return { costosFijos: [] };
     }
+  }
+};
+
+// ============================================================
+// SUPABASE INTEGRATION - Real-time Database Queries
+// ============================================================
+
+/**
+ * Fetch all invoices from Supabase with Sentry monitoring
+ */
+export const fetchSupabaseInvoices = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    Sentry.captureMessage('Supabase invoices fetched successfully', 'info');
+    return data || [];
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        source: 'supabase',
+        table: 'invoices',
+      },
+    });
+    throw error;
+  }
+};
+
+/**
+ * Fetch all fixed costs from Supabase with Sentry monitoring
+ */
+export const fetchSupabaseFixedCosts = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('fixed_costs')
+      .select('*')
+      .order('month', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    Sentry.captureMessage('Supabase fixed costs fetched successfully', 'info');
+    return data || [];
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        source: 'supabase',
+        table: 'fixed_costs',
+      },
+    });
+    throw error;
+  }
+};
+
+/**
+ * Insert invoice into Supabase with Sentry monitoring
+ */
+export const insertSupabaseInvoice = async (invoice: any) => {
+  try {
+    Sentry.addBreadcrumb({
+      category: 'supabase',
+      message: 'Inserting invoice',
+      level: 'info',
+      data: { amount: invoice.amount, status: invoice.status },
+    });
+
+    const { data, error } = await supabase
+      .from('invoices')
+      .insert([invoice])
+      .select();
+
+    if (error) {
+      throw error;
+    }
+
+    Sentry.captureMessage('Invoice inserted successfully', 'info');
+    return data?.[0] || null;
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        source: 'supabase',
+        operation: 'insert',
+        table: 'invoices',
+      },
+    });
+    throw error;
+  }
+};
+
+/**
+ * Update fixed cost in Supabase with Sentry monitoring
+ */
+export const updateSupabaseFixedCost = async (id: string, updates: any) => {
+  try {
+    Sentry.addBreadcrumb({
+      category: 'supabase',
+      message: 'Updating fixed cost',
+      level: 'info',
+      data: { id, ...updates },
+    });
+
+    const { data, error } = await supabase
+      .from('fixed_costs')
+      .update(updates)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      throw error;
+    }
+
+    Sentry.captureMessage('Fixed cost updated successfully', 'info');
+    return data?.[0] || null;
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        source: 'supabase',
+        operation: 'update',
+        table: 'fixed_costs',
+      },
+    });
+    throw error;
   }
 };
 

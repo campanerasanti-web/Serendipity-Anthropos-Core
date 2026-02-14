@@ -12,7 +12,9 @@ import SofiaAgentsDashboard from './components/SofiaAgentsDashboard';
 import { useQuery } from '@tanstack/react-query';
 import { fetchUnifiedDashboard, fetchLast30DaysMetrics, localDataService } from './services/queries';
 import { useAutonomicBody } from './hooks/useAutonomicBody';
+import { useSupabaseRealtime } from './hooks/useSupabaseRealtime';
 import { BarChart3, Settings, LayoutDashboard, Flame, Heart, Activity } from 'lucide-react';
+import * as Sentry from '@sentry/react';
 
 type Page = 'serendipity' | 'dashboard' | 'admin' | 'visualizations' | 'hermetic' | 'sofia';
 
@@ -27,6 +29,32 @@ const AppContent = () => {
   
   // 🫀 Sistema Nervioso Autónomo (hook para UI)
   const autonomic = useAutonomicBody();
+
+  // 📊 Supabase Realtime - Invoices
+  const { data: supabaseInvoices = [], loading: loadingInvoices, error: invoiceError } = useSupabaseRealtime(
+    {
+      table: 'invoices',
+      event: '*',
+      onError: (error) => {
+        Sentry.captureException(error, {
+          tags: { source: 'supabase-invoices' },
+        });
+      },
+    }
+  );
+
+  // 📊 Supabase Realtime - Fixed Costs
+  const { data: supabaseFixedCosts = [], loading: loadingFixedCosts, error: costsError } = useSupabaseRealtime(
+    {
+      table: 'fixed_costs',
+      event: '*',
+      onError: (error) => {
+        Sentry.captureException(error, {
+          tags: { source: 'supabase-fixed-costs' },
+        });
+      },
+    }
+  );
 
   const { data: stats } = useQuery({
     queryKey: ['dashboard'],
