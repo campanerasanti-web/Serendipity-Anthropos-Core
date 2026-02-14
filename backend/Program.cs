@@ -16,8 +16,23 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using QuestPDF.Infrastructure;
 using Serendipity.OpsAgents;
+using Sentry;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 🔭 Initialize Sentry Error & Performance Tracking
+builder.WebHost.UseSentry(options =>
+{
+    options.Dsn = builder.Configuration["Sentry:Dsn"];
+    options.TracesSampleRate = builder.Configuration.GetValue<double>("Sentry:TracesSampleRate");
+    options.Environment = builder.Configuration["Sentry:Environment"] ?? builder.Environment.EnvironmentName;
+    options.SendDefaultPii = builder.Configuration.GetValue<bool>("Sentry:SendDefaultPii");
+    options.AttachStacktrace = builder.Configuration.GetValue<bool>("Sentry:AttachStacktrace");
+    options.MaxBreadcrumbs = builder.Configuration.GetValue<int>("Sentry:MaxBreadcrumbs");
+    options.Debug = builder.Configuration.GetValue<bool>("Sentry:Debug");
+});
+
+Console.WriteLine("✅ Sentry backend monitoring initialized");
 
 QuestPDF.Settings.License = LicenseType.Community;
 
@@ -190,6 +205,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// 🔭 Sentry Middleware is automatically configured by builder.WebHost.UseSentry()
+// No additional app.UseSentry() call needed
+
 // Ensure CORS headers are always present, even on error responses
 app.Use(async (context, next) =>
 {
@@ -216,6 +234,17 @@ if (app.Environment.IsDevelopment())
 // Health check endpoint for Render
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
     .WithName("HealthCheck");
+
+// 🧪 Sentry Test Endpoint - Throws exception to verify error tracking
+app.MapGet("/api/test-sentry", () =>
+{
+    // Log breadcrumb before error
+    SentrySdk.AddBreadcrumb("Testing Sentry error capture from backend", "test");
+    
+    // Throw exception to test Sentry capture
+    throw new InvalidOperationException("Backend Sentry test error - Integration working! 🔭");
+})
+.WithName("TestSentry");
 
 // ========================
 // Autonomic System Endpoints (Mini endpoints for frontend dashboard)

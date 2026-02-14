@@ -17,6 +17,36 @@ import { useSupabaseRealtime } from './hooks/useSupabaseRealtime';
 import { BarChart3, Settings, LayoutDashboard, Flame, Heart, Activity } from 'lucide-react';
 import * as Sentry from '@sentry/react';
 
+// 🧪 Componente de prueba para Sentry
+function ErrorButton() {
+  return (
+    <button
+      onClick={() => {
+        throw new Error('This is your first error!');
+      }}
+      style={{
+        padding: '0.5rem 1rem',
+        borderRadius: '0.5rem',
+        border: '2px solid rgba(239, 68, 68, 0.5)',
+        background: 'rgba(239, 68, 68, 0.1)',
+        color: 'rgb(239, 68, 68)',
+        cursor: 'pointer',
+        fontWeight: '600',
+        fontSize: '0.75rem',
+        transition: 'all 0.3s ease'
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+      }}
+    >
+      🧪 Test Sentry
+    </button>
+  );
+}
+
 type Page = 'serendipity' | 'dashboard' | 'admin' | 'visualizations' | 'hermetic' | 'sofia';
 
 const queryClient = new QueryClient();
@@ -148,7 +178,10 @@ const AppContent = () => {
             Admin
           </button>
 
-          {/* 🫀 Indicador del Sistema Nervioso Autónomo */}
+          {/* � Botón de prueba de Sentry */}
+          <ErrorButton />
+
+          {/* �🫀 Indicador del Sistema Nervioso Autónomo */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
