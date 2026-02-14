@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
+import { I18nProvider } from './i18n/I18nContext';
 import { NotificationProvider } from './components/NotificationCenter';
 import ErrorBoundary from './components/ErrorBoundary';
 import ZenDashboard from './components/ZenDashboard';
@@ -205,14 +206,16 @@ const AppContent = () => {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <NotificationProvider>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
-      </NotificationProvider>
-      <Toaster position="top-right" richColors />
-    </QueryClientProvider>
+    <I18nProvider defaultLanguage="es" defaultRole="admin">
+      <QueryClientProvider client={queryClient}>
+        <NotificationProvider>
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
+        </NotificationProvider>
+        <Toaster position="top-right" richColors />
+      </QueryClientProvider>
+    </I18nProvider>
   );
 }
 
