@@ -2,15 +2,13 @@ services:
   - type: web
     name: serendipity-backend
     runtime: dotnet
-    runtimeVersion: "8"
-    buildCommand: "cd backend && dotnet publish -c Release -o out"
-    startCommand: "cd backend && dotnet ./out/ElMediadorDeSofia.dll"
+    runtimeVersion: 8.0.0
+    buildCommand: "dotnet publish backend/ElMediadorDeSofia.csproj -c Release -o out"
+    startCommand: "cd out && dotnet ElMediadorDeSofia.dll"
     envVars:
-      - key: DATABASE_URL
-        scope: build,runtime
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ASPNETCORE_URLS
-        value: "http://0.0.0.0:10000"
+        value: http://+:10000
     port: 10000
     healthCheckPath: /health
