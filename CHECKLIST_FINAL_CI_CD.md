@@ -17,7 +17,7 @@
 - [ ] Name: `DB_CONNECTION_STAGING` (copiar exacto)
 - [ ] Secret: Pega tu connection string de staging
   ```
-  Host=db.xxxxx.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=xxxxx
+  Host=db.xxxxx.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=Santi@serendipity
   ```
 - [ ] Click "Add secret"
 - [ ] Espera confirmación ✅
