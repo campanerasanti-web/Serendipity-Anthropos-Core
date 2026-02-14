@@ -131,11 +131,8 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
     setInput('');
     setIsSending(true);
 
-    // 🔍 Start Sentry transaction for message handling
-    const transaction = Sentry.startSpan({
-      op: 'agent.sendMessage',
-      name: `${activeProfile.name}: Message Processing`,
-    });
+    // 🔍 Track message sending with Sentry
+    Sentry.captureMessage(`Agent message: ${activeProfile.name}`, 'info');
 
     try {
       const payload = {
@@ -247,7 +244,6 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
       ]);
       setIdeaByAgent((prev) => ({ ...prev, [activeProfile.id]: true }));
     } finally {
-      transaction?.end();
       setIsSending(false);
       setAttachment(null);
     }
