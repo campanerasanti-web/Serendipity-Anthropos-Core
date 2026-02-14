@@ -235,6 +235,30 @@ app.MapGet("/api/hermetic/health", () => Results.Ok(new
 }))
 .WithName("HermeticHealth");
 
+app.MapGet("/api/hermetic/status", () => Results.Ok(new
+{
+    systems = new
+    {
+        mentalismo = new { score = 88, frequency = "963Hz" },
+        correspondencia = new { score = 92, frequency = "852Hz" },
+        vibracion = new { score = 75, frequency = "741Hz" },
+        polaridad = new { score = 90, frequency = "639Hz" },
+        ritmo = new { score = 85, frequency = "528Hz" },
+        causalidad = new { score = 80, frequency = "417Hz" },
+        generacion = new { score = 78, frequency = "396Hz" }
+    },
+    timestamp = DateTime.UtcNow
+}))
+.WithName("HermeticStatus");
+
+app.MapPost("/api/hermetic/activate", () => Results.Ok(new
+{
+    ok = true,
+    message = "Hermetic activation completed",
+    timestamp = DateTime.UtcNow
+}))
+.WithName("HermeticActivate");
+
 // Production WIP - Trabajos en progreso
 app.MapGet("/api/production/wip", () => Results.Ok(new[] 
 {
