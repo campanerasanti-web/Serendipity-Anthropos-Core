@@ -252,6 +252,41 @@ app.MapGet("/api/unified-dashboard", () => Results.Ok(new
 }))
 .WithName("UnifiedDashboard");
 
+// Fixed Costs - Costos fijos
+app.MapGet("/api/fixed-costs", () => Results.Ok(new 
+{
+    costs = new[] 
+    {
+        new { name = "Facility Rent", amount = 50000000, currency = "VND" },
+        new { name = "Equipment Lease", amount = 25000000, currency = "VND" },
+        new { name = "Insurance", amount = 15000000, currency = "VND" },
+        new { name = "Maintenance", amount = 20000000, currency = "VND" }
+    },
+    total = 110000000,
+    currency = "VND"
+}))
+.WithName("FixedCosts");
+
+// Last 30 Days Metrics - Métricas últimos 30 días
+app.MapGet("/api/last-30-days-metrics", () => Results.Ok(new 
+{
+    period = "Last 30 days",
+    metrics = new 
+    {
+        totalOrders = 52,
+        completedOrders = 48,
+        completionRate = 92.3,
+        averageDaysToComplete = 8.5,
+        lotsProcessed = 12,
+        revenue = 2500000000m,
+        expenses = 1200000000m,
+        profit = 1300000000m
+    },
+    trend = "upward",
+    timestamp = DateTime.UtcNow
+}))
+.WithName("Last30DaysMetrics");
+
 app.UseRouting();
 app.UseCors();
 app.UseAuthorization();
