@@ -19,11 +19,18 @@ on:
     - cron: '0 3 * * *'
   workflow_dispatch:
 
+# Required permissions for security scanning
+# Note: If you get "Resource not accessible by integration" error:
+# 1. Go to Settings → Actions → General
+# 2. Set "Workflow permissions" to "Read and write permissions"
+# 3. Check "Allow GitHub Actions to create and approve pull requests"
+# See GITHUB_ACTIONS_PERMISSIONS_GUIDE.md for details
 permissions:
-  contents: read
-  security-events: write
-  actions: read
-  statuses: write
+  contents: read           # Read repository contents
+  security-events: write   # Upload CodeQL/SARIF results to Security tab
+  actions: read           # Read action metadata
+  statuses: write         # Update commit statuses
+  pull-requests: write    # Comment on pull requests with security findings
 
 jobs:
   # ===========================================

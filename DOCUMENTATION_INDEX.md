@@ -125,6 +125,30 @@ node scripts/test-supabase-rpc.mjs
 
 ---
 
+## 🔧 CI/CD & GITHUB ACTIONS
+
+### GitHub Actions Setup
+👉 **[GITHUB_ACTIONS_PERMISSIONS_GUIDE.md](./GITHUB_ACTIONS_PERMISSIONS_GUIDE.md)** - **⚠️ MUST READ**  
+- **Fix "Resource not accessible by integration" error**
+- Configure repository workflow permissions
+- Enable CodeQL security scanning
+- Step-by-step permission configuration
+
+### CI/CD Documentation
+- [CI_CD_QUICKSTART_SOPHIA.md](./CI_CD_QUICKSTART_SOPHIA.md) - Quick start guide
+- [CI_CD_SETUP_GUIDE.md](./CI_CD_SETUP_GUIDE.md) - Complete setup
+- [CI_CD_WORKFLOWS_RESUMEN.md](./CI_CD_WORKFLOWS_RESUMEN.md) - Workflows summary
+
+### Active Workflows
+- **Security Scanning** - CodeQL, NPM audit, NuGet audit, OWASP checks
+- **Backend CI** - .NET build, lint, static analysis
+- **Frontend CI** - React build, ESLint, TypeScript checking
+- **Tests** - Unit tests, integration tests, coverage reports
+- **Release** - Automated releases with artifacts
+- **Migrations** - Database migration management
+
+---
+
 ## 🔐 SECURITY CHECKLIST
 
 - [ ] `.env.local` created with Supabase credentials

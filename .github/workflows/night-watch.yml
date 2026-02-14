@@ -8,6 +8,9 @@ on:
     - cron: "0 19 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read      # Read repository contents
+
 jobs:
   night-watch:
     runs-on: ubuntu-latest

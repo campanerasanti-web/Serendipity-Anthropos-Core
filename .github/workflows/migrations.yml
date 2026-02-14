@@ -23,6 +23,10 @@ on:
           - status
           - seed
 
+permissions:
+  contents: read      # Read repository contents
+  actions: write      # Upload backup artifacts
+
 env:
   DOTNET_VERSION: '8.0.x'
 
