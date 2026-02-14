@@ -18,6 +18,10 @@ on:
       - '.github/workflows/backend-ci.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read      # Read repository contents
+  actions: write      # Upload artifacts
+
 env:
   DOTNET_VERSION: '8.0.x'
   CONFIGURATION: 'Release'
