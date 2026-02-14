@@ -93,7 +93,16 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
 export const useI18n = (): I18nContextType => {
   const context = useContext(I18nContext);
   if (!context) {
-    throw new Error('useI18n debe usarse dentro de I18nProvider');
+    // Fallback: devuelve un contexto por defecto sin fallar
+    console.warn('⚠️ useI18n: No I18nProvider found. Returning defaults.');
+    return {
+      language: 'es',
+      currentLanguage: 'es',
+      t: translations['es'],
+      setLanguage: () => {},
+      setUserRole: () => {},
+      currentRole: 'admin',
+    };
   }
   return context;
 };
