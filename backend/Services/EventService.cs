@@ -60,5 +60,19 @@ namespace ElMediadorDeSofia.Services
             _db.EventRecords.Update(record);
             await _db.SaveChangesAsync();
         }
+
+        public async Task LogEventAsync(EventRecord record)
+        {
+            _db.EventRecords.Add(record);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task<List<EventRecord>> GetRecentEventsAsync(int limit = 50)
+        {
+            return await _db.EventRecords
+                .OrderByDescending(e => e.CreatedAt)
+                .Take(limit)
+                .ToListAsync();
+        }
     }
 }

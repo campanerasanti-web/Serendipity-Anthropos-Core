@@ -51,7 +51,7 @@ namespace ElMediadorDeSofia.Controllers
                     Id = Guid.NewGuid(),
                     EventType = "xero.invoice." + eventType,
                     Source = "Xero",
-                    Data = System.Text.Json.JsonSerializer.Serialize(invoiceData),
+                    Payload = System.Text.Json.JsonSerializer.Serialize(invoiceData),
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -86,7 +86,7 @@ namespace ElMediadorDeSofia.Controllers
                     Id = Guid.NewGuid(),
                     EventType = "quickbooks.invoice." + eventType,
                     Source = "QuickBooks",
-                    Data = System.Text.Json.JsonSerializer.Serialize(payload),
+                    Payload = System.Text.Json.JsonSerializer.Serialize(payload),
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -123,7 +123,7 @@ namespace ElMediadorDeSofia.Controllers
                     Id = Guid.NewGuid(),
                     EventType = source + "." + eventType,
                     Source = source,
-                    Data = System.Text.Json.JsonSerializer.Serialize(payload),
+                    Payload = System.Text.Json.JsonSerializer.Serialize(payload),
                     CreatedAt = DateTime.UtcNow
                 };
 

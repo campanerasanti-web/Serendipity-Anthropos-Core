@@ -31,6 +31,9 @@ namespace ElMediadorDeSofia.Models
 
         public DateTime? ProcessedAt { get; set; }
 
+        // Webhook source tracking
+        public string? Source { get; set; }
+
         // Legacy compatibility and extended support
         [NotMapped]
         public DateTime Timestamp 
