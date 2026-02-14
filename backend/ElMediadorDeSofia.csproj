@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>
