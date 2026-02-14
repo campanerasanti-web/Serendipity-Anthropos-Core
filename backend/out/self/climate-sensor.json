@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-02-13T02:00:00Z",
+  "temperature": 22.5,
+  "humidity": 45.0,
+  "pressure": "normal",
+  "wind_speed": 0.0,
+  "rainfall": 0.0,
+  "alerts": []
+}

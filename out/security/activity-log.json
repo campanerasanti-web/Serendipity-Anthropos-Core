@@ -1,0 +1,17 @@
+[
+  {
+    "User": "admin",
+    "Action": "LOGIN_SUCCESS",
+    "Timestamp": "2026-02-13T14:30:00Z"
+  },
+  {
+    "User": "system",
+    "Action": "CONFIG_UPDATE",
+    "Timestamp": "2026-02-13T23:45:00Z"
+  },
+  {
+    "User": "api-client",
+    "Action": "DATA_READ",
+    "Timestamp": "2026-02-13T09:15:00Z"
+  }
+]

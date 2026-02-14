@@ -1,0 +1,44 @@
+[
+  {
+    "flowId": "FLOW-001",
+    "responsiblePerson": "Santiago Campanera",
+    "assignedAt": "2026-02-13T00:00:00Z",
+    "status": "active"
+  },
+  {
+    "flowId": "FLOW-002",
+    "responsiblePerson": "Sistema",
+    "assignedAt": "2026-02-13T00:00:00Z",
+    "status": "active"
+  },
+  {
+    "flowId": "FLOW-003",
+    "responsiblePerson": "Sistema",
+    "assignedAt": "2026-02-13T00:00:00Z",
+    "status": "active"
+  },
+  {
+    "flowId": "FLOW-004",
+    "responsiblePerson": "Equipo de Producción",
+    "assignedAt": "2026-02-13T00:00:00Z",
+    "status": "active"
+  },
+  {
+    "flowId": "FLOW-005",
+    "responsiblePerson": "Supervisor",
+    "assignedAt": "2026-02-13T00:00:00Z",
+    "status": "active"
+  },
+  {
+    "flowId": "FLOW-006",
+    "responsiblePerson": "Gateway",
+    "assignedAt": "2026-02-13T00:00:00Z",
+    "status": "active"
+  },
+  {
+    "flowId": "FLOW-007",
+    "responsiblePerson": "Dashboard",
+    "assignedAt": "2026-02-13T00:00:00Z",
+    "status": "active"
+  }
+]

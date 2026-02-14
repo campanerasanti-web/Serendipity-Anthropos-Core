@@ -1,0 +1,44 @@
+[
+  {
+    "id": "FLOW-001",
+    "name": "Recepción de Orden",
+    "category": "production",
+    "isActive": true
+  },
+  {
+    "id": "FLOW-002",
+    "name": "Asignación de Lote",
+    "category": "production",
+    "isActive": true
+  },
+  {
+    "id": "FLOW-003",
+    "name": "Generación de QR",
+    "category": "tracking",
+    "isActive": true
+  },
+  {
+    "id": "FLOW-004",
+    "name": "Empaque (Packing)",
+    "category": "packing",
+    "isActive": true
+  },
+  {
+    "id": "FLOW-005",
+    "name": "Cierre de Jornada",
+    "category": "reporting",
+    "isActive": true
+  },
+  {
+    "id": "FLOW-006",
+    "name": "Tracking IoT",
+    "category": "monitoring",
+    "isActive": true
+  },
+  {
+    "id": "FLOW-007",
+    "name": "Reporte de Abundancia",
+    "category": "reporting",
+    "isActive": true
+  }
+]

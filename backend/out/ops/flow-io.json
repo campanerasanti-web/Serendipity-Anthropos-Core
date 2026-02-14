@@ -1,0 +1,51 @@
+{
+  "FLOW-001": {
+    "name": "Recepción de Orden",
+    "input": "Orden del Cliente",
+    "output": "Orden Registrada",
+    "inputSource": "Sistema CRM",
+    "outputDest": "Sistema de Producción"
+  },
+  "FLOW-002": {
+    "name": "Asignación de Lote",
+    "input": "Orden Registrada",
+    "output": "Lote Asignado",
+    "inputSource": "Sistema de Producción",
+    "outputDest": "Centro de Producción"
+  },
+  "FLOW-003": {
+    "name": "Generación de QR",
+    "input": "Lote Asignado",
+    "output": "QR Generado",
+    "inputSource": "Centro de Producción",
+    "outputDest": "Sistema de Tracking"
+  },
+  "FLOW-004": {
+    "name": "Empaque",
+    "input": "QR Generado",
+    "output": "Caja Sellada",
+    "inputSource": "Sistema de Tracking",
+    "outputDest": "Centro de Distribución"
+  },
+  "FLOW-005": {
+    "name": "Cierre de Jornada",
+    "input": "Caja Sellada",
+    "output": "Reporte de Cierre",
+    "inputSource": "Centro de Distribución",
+    "outputDest": "Sistema de Reportes"
+  },
+  "FLOW-006": {
+    "name": "Tracking IoT",
+    "input": "Caja Sellada",
+    "output": "Posición en Tiempo Real",
+    "inputSource": "Centro de Distribución",
+    "outputDest": "Dashboard de Seguimiento"
+  },
+  "FLOW-007": {
+    "name": "Reporte de Abundancia",
+    "input": "Reporte de Cierre",
+    "output": "Reporte Financiero",
+    "inputSource": "Sistema de Reportes",
+    "outputDest": "Directivos"
+  }
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "User": "admin",
+    "ConfigKey": "MAX_REQUESTS_PER_HOUR",
+    "OldValue": "100",
+    "NewValue": "500",
+    "Timestamp": "2026-02-13T14:00:00Z"
+  },
+  {
+    "User": "system",
+    "ConfigKey": "SECURITY_LEVEL",
+    "OldValue": "STANDARD",
+    "NewValue": "HIGH",
+    "Timestamp": "2026-02-12T22:00:00Z"
+  }
+]

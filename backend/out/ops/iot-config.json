@@ -1,0 +1,23 @@
+{
+  "broker": "mqtt://localhost:1883",
+  "clientId": "serendipity-ops-gardener",
+  "topics": [
+    "serendipity/sensors/vibration",
+    "serendipity/sensors/movement",
+    "serendipity/sensors/temperature",
+    "serendipity/qr/scan",
+    "serendipity/gateway/status",
+    "serendipity/operations/unusual_energy"
+  ],
+  "reconnectInterval": 5000,
+  "mode": "simulated",
+  "credentials": {
+    "username": "ops-gardener",
+    "password": ""
+  },
+  "alertThresholds": {
+    "vibration_critical": 9.5,
+    "vibration_warning": 7.5,
+    "movement_cooldown_minutes": 5
+  }
+}

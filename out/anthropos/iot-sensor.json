@@ -1,0 +1,7 @@
+{
+  "sensor_id": "iot-001",
+  "status": "ok",
+  "temperature": 21.5,
+  "humidity": 44,
+  "alerts": []
+}

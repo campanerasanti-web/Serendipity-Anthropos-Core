@@ -1,0 +1,9 @@
+{
+  "/api/admin": "admin-team",
+  "/api/config": "",
+  "/api/users": "user-service",
+  "/api/payments": "finance-team",
+  "/api/reports": "analytics-team",
+  "/api/audit": "security-team",
+  "/api/system": ""
+}

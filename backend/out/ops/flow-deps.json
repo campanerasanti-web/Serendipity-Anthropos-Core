@@ -1,0 +1,30 @@
+{
+  "FLOW-001": {
+    "Previous": [],
+    "Next": ["FLOW-002"]
+  },
+  "FLOW-002": {
+    "Previous": ["FLOW-001"],
+    "Next": ["FLOW-003"]
+  },
+  "FLOW-003": {
+    "Previous": ["FLOW-002"],
+    "Next": ["FLOW-004"]
+  },
+  "FLOW-004": {
+    "Previous": ["FLOW-003"],
+    "Next": ["FLOW-005", "FLOW-006"]
+  },
+  "FLOW-005": {
+    "Previous": ["FLOW-004"],
+    "Next": ["FLOW-007"]
+  },
+  "FLOW-006": {
+    "Previous": ["FLOW-004"],
+    "Next": ["FLOW-007"]
+  },
+  "FLOW-007": {
+    "Previous": ["FLOW-005", "FLOW-006"],
+    "Next": []
+  }
+}

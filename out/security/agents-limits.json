@@ -1,0 +1,30 @@
+{
+  "OpsGardener": {
+    "CanWrite": true,
+    "CanExecute": true,
+    "CanConfigure": false,
+    "MaxRequestsPerHour": 500,
+    "TimeoutSeconds": 300
+  },
+  "SecurityGardener": {
+    "CanWrite": true,
+    "CanExecute": true,
+    "CanConfigure": true,
+    "MaxRequestsPerHour": 1000,
+    "TimeoutSeconds": 600
+  },
+  "DataCollector": {
+    "CanWrite": true,
+    "CanExecute": false,
+    "CanConfigure": false,
+    "MaxRequestsPerHour": 200,
+    "TimeoutSeconds": 120
+  },
+  "ReportGenerator": {
+    "CanWrite": false,
+    "CanExecute": true,
+    "CanConfigure": false,
+    "MaxRequestsPerHour": 50,
+    "TimeoutSeconds": 900
+  }
+}

@@ -30,12 +30,12 @@
 # Frontend check
 cd "c:\Users\santiago campanera\OneDrive\Desktop\codigo"
 npx tsc --noEmit
-# Expected: No output (vacío = OK)
+# ✅ VERIFIED: No errors
 
-# Backend check
+# Backend check (.NET, not TS)
 cd backend
-npx tsc --noEmit
-# Expected: No output (vacío = OK)
+dotnet build
+# ✅ VERIFIED: Build succeeded
 ```
 
 ### Verificar que npm packages están instalados:
@@ -90,26 +90,26 @@ npm run dev
 
 ## ✨ VERIFICACIÓN DE ENDPOINTS
 
-### Una vez los servidores estén corriendo:
+### Verificar endpoints en producción (Render):
 
 ```powershell
 # Health check básico
-curl http://localhost:5000/api/hermetic/health
+curl.exe https://serendipity-backend1.onrender.com/api/hermetic/health
 
 # Diagnóstico completo
-curl http://localhost:5000/api/hermetic/status
+curl.exe https://serendipity-backend1.onrender.com/api/hermetic/status
 
 # Activar ritual hermético
-curl -X POST http://localhost:5000/api/hermetic/activate
+curl.exe -X POST https://serendipity-backend1.onrender.com/api/hermetic/activate
 
-# Ver estado de Mentalismo (Sophia)
-curl http://localhost:5000/api/hermetic/mentalismo
+# Production WIP (validado)
+curl.exe https://serendipity-backend1.onrender.com/api/production/wip
 
-# Ver correspondencia (Cielo ↔ Tierra)
-curl http://localhost:5000/api/hermetic/correspondencia
+# Unified Dashboard
+curl.exe https://serendipity-backend1.onrender.com/api/unified-dashboard
 
-# Ver balance (Polaridad)
-curl http://localhost:5000/api/hermetic/polaridad
+# Fixed costs
+curl.exe https://serendipity-backend1.onrender.com/api/fixed-costs
 ```
 
 ### Respuesta esperada (health):
