@@ -28,6 +28,13 @@ export const fetchUnifiedDashboard = async (): Promise<Stats> => {
   return res.json();
 };
 
+export const fetchSerendipityDashboard = async () => {
+  const res = await fetch(`${API_BASE}/api/serendipity/dashboard`);
+  if (!res.ok) throw new Error('Failed to fetch Serendipity dashboard');
+  const result = await res.json();
+  return result?.success ? result.data : result;
+};
+
 export const fetchMonthlyInvoices = async (limit: number = 50, offset: number = 0) => {
   try {
     const res = await fetch(`${API_BASE}/api/invoices?limit=${limit}&offset=${offset}`);

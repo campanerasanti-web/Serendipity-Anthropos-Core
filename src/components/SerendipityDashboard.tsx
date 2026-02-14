@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './SerendipityDashboard.tsx.css';
 import { useSystemHealth } from '../hooks/useSystemHealth';
 import { useEmergencyMode } from '../hooks/useEmergencyMode';
@@ -19,6 +19,8 @@ import ChecklistsPage from '../pages/ChecklistsPage';
 import KPIDashboardPage from '../pages/KPIDashboardPage';
 import GlobalAssistantBubble from './GlobalAssistantBubble';
 import apiClient from '../api/apiClient';
+import { fetchSerendipityDashboard } from '../services/queries';
+import { useFixedCostsRealtime, useInvoicesRealtime } from '../hooks/useRealtimeSubscription';
 
 interface FinancialState {
   monthlyRevenue: number;
@@ -109,24 +111,10 @@ export const SerendipityDashboard: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${baseUrl}/api/serendipity/dashboard`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard data');
-      }
-
-      const result = await response.json();
-      
-      // Mock API devuelve datos directamente, backend .NET usa wrapper
-      const data = result.success ? result.data : result;
+      const data = await fetchSerendipityDashboard();
       
       setFinancial(data.financial);
       setTeam(data.team);
@@ -138,7 +126,18 @@ export const SerendipityDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const handleRealtimeUpdate = useCallback(() => {
+    void fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useInvoicesRealtime(handleRealtimeUpdate);
+  useFixedCostsRealtime(handleRealtimeUpdate);
 
   const formatCurrency = (value: number) => {
     if (value >= 1_000_000_000) {

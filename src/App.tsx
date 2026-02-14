@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { NotificationProvider } from './components/NotificationCenter';
 import ErrorBoundary from './components/ErrorBoundary';
 import ZenDashboard from './components/ZenDashboard';
+import { SerendipityDashboard } from './components/SerendipityDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import VisualizationDashboard from './components/VisualizationDashboard';
 import HermeticBodyDashboard from './components/HermeticBodyDashboard';
@@ -13,7 +14,7 @@ import { fetchUnifiedDashboard, fetchLast30DaysMetrics, localDataService } from 
 import { useAutonomicBody } from './hooks/useAutonomicBody';
 import { BarChart3, Settings, LayoutDashboard, Flame, Heart, Activity } from 'lucide-react';
 
-type Page = 'dashboard' | 'admin' | 'visualizations' | 'hermetic' | 'sofia';
+type Page = 'serendipity' | 'dashboard' | 'admin' | 'visualizations' | 'hermetic' | 'sofia';
 
 const queryClient = new QueryClient();
 
@@ -22,7 +23,7 @@ import { initializeAutonomicSystem } from './services/autonomic-system';
 const autonomicGlobal = initializeAutonomicSystem();
 
 const AppContent = () => {
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
+  const [currentPage, setCurrentPage] = useState<Page>('serendipity');
   
   // 🫀 Sistema Nervioso Autónomo (hook para UI)
   const autonomic = useAutonomicBody();
@@ -93,9 +94,13 @@ const AppContent = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button onClick={() => setCurrentPage('serendipity')} style={navButtonStyle(currentPage === 'serendipity')}>
+            <LayoutDashboard width={16} height={16} />
+            Serendipity
+          </button>
           <button onClick={() => setCurrentPage('dashboard')} style={navButtonStyle(currentPage === 'dashboard')}>
             <LayoutDashboard width={16} height={16} />
-            Dashboard
+            Zen
           </button>
           <button onClick={() => setCurrentPage('hermetic')} style={navButtonStyle(currentPage === 'hermetic')}>
             <Flame width={16} height={16} />
@@ -159,6 +164,7 @@ const AppContent = () => {
       </nav>
 
       <div style={{ background: 'linear-gradient(to bottom right, rgb(15, 23, 42), rgb(15, 23, 42), rgb(49, 46, 129))' }}>
+        {currentPage === 'serendipity' && <SerendipityDashboard />}
         {currentPage === 'dashboard' && <ZenDashboard />}
         {currentPage === 'hermetic' && <HermeticBodyDashboard />}
         {currentPage === 'sofia' && <SofiaAgentsDashboard />}

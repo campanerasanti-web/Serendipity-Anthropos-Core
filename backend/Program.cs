@@ -50,6 +50,7 @@ builder.Services.AddScoped<PackingListService>();
 builder.Services.AddScoped<LotCloseService>();
 builder.Services.AddScoped<GuidedAssistantService>();
 builder.Services.AddScoped<SerendipityService>();
+builder.Services.AddScoped<WebhookProcessorService>();
 
 // Sistema de Órdenes con QR
 builder.Services.AddScoped<OrderService>();

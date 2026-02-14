@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 type AgentId = 'ops_gardener' | 'security_gardener' | 'anthropos_core' | 'self_gardener';
 
@@ -62,6 +62,12 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [attachment, setAttachment] = useState<File | null>(null);
+  const [ideaByAgent, setIdeaByAgent] = useState<Record<AgentId, boolean>>({
+    ops_gardener: false,
+    security_gardener: false,
+    anthropos_core: false,
+    self_gardener: false,
+  });
 
   const visibleAgents = useMemo(() => {
     if (!allowedAgents || allowedAgents.length === 0) return agents;
@@ -75,15 +81,33 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
 
   const orbitSpeed = privilegeLevel === 'sovereign' ? '16s' : privilegeLevel === 'seed' ? '28s' : '22s';
 
+  const getIdeaClass = (agentId: AgentId) => {
+    switch (agentId) {
+      case 'ops_gardener':
+        return 'bg-amber-400 text-amber-950';
+      case 'security_gardener':
+        return 'bg-red-500 text-red-50';
+      case 'anthropos_core':
+        return 'bg-violet-500 text-violet-50';
+      case 'self_gardener':
+        return 'bg-emerald-500 text-emerald-50';
+      default:
+        return 'bg-amber-400 text-slate-900';
+    }
+  };
+
   const openAgent = (agentId: AgentId) => {
     const profile = agents.find((agent) => agent.id === agentId);
     setActiveAgent(agentId);
     setAttachment(null);
     setInput('');
+    setIdeaByAgent((prev) => ({ ...prev, [agentId]: false }));
     setMessages([
       {
         role: 'agent',
-        text: `${profile?.persona} Estoy aqui para ayudarte a cultivar este espacio.`,
+        text: `${profile?.persona} Sofia dice: empieza por lo esencial. Puedo ayudarte con: ${
+          profile?.abilities.join(', ')
+        }.`,
       },
     ]);
   };
@@ -144,6 +168,7 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
       }
 
       setMessages((prev) => [...prev, { role: 'agent', text: agentReply }]);
+      setIdeaByAgent((prev) => ({ ...prev, [activeProfile.id]: true }));
     } catch (e) {
       setMessages((prev) => [
         ...prev,
@@ -152,11 +177,32 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
           text: 'Estoy aqui contigo. No pude alcanzar la respuesta ahora, pero puedo escucharte de nuevo.',
         },
       ]);
+      setIdeaByAgent((prev) => ({ ...prev, [activeProfile.id]: true }));
     } finally {
       setIsSending(false);
       setAttachment(null);
     }
   };
+
+  useEffect(() => {
+    const handleDocument = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { agentId?: AgentId } | undefined;
+      if (!detail?.agentId) return;
+      setIdeaByAgent((prev) => ({ ...prev, [detail.agentId as AgentId]: true }));
+      if (detail.agentId === activeAgent) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'agent',
+            text: 'Idea registrada: recibi tu archivo y puedo extraer acciones o patrones cuando quieras.',
+          },
+        ]);
+      }
+    };
+
+    window.addEventListener('garden-document', handleDocument as EventListener);
+    return () => window.removeEventListener('garden-document', handleDocument as EventListener);
+  }, [activeAgent]);
 
   return (
     <>
@@ -165,11 +211,18 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
           <button
             key={agent.id}
             onClick={() => openAgent(agent.id)}
-            className="p-3 rounded-full bg-slate-800/70 hover:bg-emerald-700 text-2xl shadow-lg transition-all animate-spin"
+            className="relative p-3 rounded-full bg-slate-800/70 hover:bg-emerald-700 text-2xl shadow-lg transition-all animate-spin"
             style={{ animationDuration: orbitSpeed }}
             title={agent.name}
           >
             {agent.seed}
+            {ideaByAgent[agent.id] && (
+              <span
+                className={`absolute -top-1 -right-1 text-xs rounded-full w-5 h-5 flex items-center justify-center shadow ${getIdeaClass(agent.id)}`}
+              >
+                💡
+              </span>
+            )}
           </button>
         ))}
       </div>
