@@ -44,8 +44,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
-          cache-dependency-path: backend/packages.lock.json
 
       - name: 📥 Restore NuGet packages
         run: dotnet restore backend/
@@ -74,13 +72,15 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
+
+      - name: 📥 Restore dependencies
+        run: dotnet restore backend/ElMediadorDeSofia.csproj
+        shell: bash
 
       - name: 🏗️ Build backend
         run: |
           dotnet build backend/ElMediadorDeSofia.csproj \
             --configuration ${{ env.CONFIGURATION }} \
-            --no-restore \
             --verbosity normal
         shell: bash
 
@@ -110,7 +110,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
 
       - name: 📋 Install dotnet-format
         run: dotnet tool install -g dotnet-format
@@ -193,14 +192,16 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
+
+      - name: 📥 Restore dependencies
+        run: dotnet restore backend/ElMediadorDeSofia.csproj
+        shell: bash
 
       - name: 🏗️ Build for publishing
         run: |
           dotnet publish backend/ElMediadorDeSofia.csproj \
             --configuration ${{ env.CONFIGURATION }} \
-            --output backend/publish \
-            --no-restore
+            --output backend/publish
         shell: bash
 
       - name: 📦 Upload artifact
