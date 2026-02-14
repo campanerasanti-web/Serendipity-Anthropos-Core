@@ -23,8 +23,11 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 // Configuration: replace with a real connection string in production
 // Usando Supabase: Host=db.uikemwxbndwidqebeyre.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=[DB_PASSWORD]
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
-    Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
+var connectionString = 
+    Environment.GetEnvironmentVariable("DATABASE_URL") ??
+    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection") ??
+    builder.Configuration.GetConnectionString("DefaultConnection") ?? 
+    builder.Configuration.GetConnectionString("PostgreSQL") ??
     "Host=localhost;Port=5432;Database=elmediador;Username=postgres;Password=postgres";
 
 // Add DbContext (skip if no DB available - allow API to start)
