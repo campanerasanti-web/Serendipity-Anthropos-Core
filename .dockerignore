@@ -1,0 +1,10 @@
+**/.git
+**/.vscode
+**/node_modules
+**/bin
+**/obj
+**/dist
+**/.env
+**/.env.local
+*.log
+*.md
