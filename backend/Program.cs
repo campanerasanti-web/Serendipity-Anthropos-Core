@@ -155,8 +155,6 @@ builder.Services.AddHostedService(provider => provider.GetRequiredService<SelfGa
 // ========================
 // Paralinfa (Frecuencia) + Linfa (Ritmo) + Knowledge Base
 
-using ElMediadorDeSofia.Services.Sofia;
-
 builder.Services.AddScoped<SofiaParalinephaAgent>();
 builder.Services.AddScoped<SofiaLinfaAgent>();
 builder.Services.AddHostedService<SofiaMonitoringWorker>();
