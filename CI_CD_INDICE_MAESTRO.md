@@ -20,7 +20,64 @@
 
 🔵 RESUMEN EJECUTIVO → CI_CD_SERENDIPITY_RESUMEN_EJECUTIVO.md
                        (Vista de CEO/product manager)
+
+🔭 MONITORING → SENTRY_INTEGRATION_SUMMARY.md
+                (Error tracking & Performance monitoring)
 ```
+
+---
+
+## 🔭 SENTRY MONITORING - ESTADO ACTUAL
+
+**Fecha Integración:** 15 de febrero 2026  
+**Estado:** ✅ COMPLETADO Y OPERATIVO  
+**Dashboard:** https://serendipity-bros.sentry.io/settings/projects/serendipity-anthropos-core/
+
+### ✅ Componentes Integrados
+
+```
+┌──────────────────────────────────────────────────────┐
+│          SENTRY FULL STACK MONITORING                │
+├──────────────────────────────────────────────────────┤
+│                                                       │
+│  FRONTEND (React + Vite)                             │
+│  ✅ Error Boundary en main.tsx                       │
+│  ✅ Source Maps automáticos (sentryVitePlugin)      │
+│  ✅ Performance tracking (Web Vitals)               │
+│  ✅ Test button en navbar                           │
+│  ✅ DSN configurado por wizard                      │
+│                                                       │
+│  BACKEND (ASP.NET Core .NET 8)                       │
+│  ✅ Sentry.AspNetCore 4.0.3 instalado               │
+│  ✅ builder.WebHost.UseSentry() configurado         │
+│  ✅ appsettings.json + Production.json              │
+│  ✅ Test endpoint: /api/test-sentry                 │
+│  ✅ Auto error capture + breadcrumbs                │
+│                                                       │
+│  OBSERVABILITY                                       │
+│  ✅ Distributed tracing (Frontend ↔ Backend)        │
+│  ✅ Alert frequency: 10 errors/min                  │
+│  ✅ Sample rates: Dev 100% | Prod 10-20%            │
+│                                                       │
+└──────────────────────────────────────────────────────┘
+```
+
+### 🧪 Endpoints de Test
+
+**Frontend:** http://localhost:5173 → Click botón "🧪 Test Sentry" en navbar  
+**Backend:** http://localhost:5000/api/test-sentry → Throws test exception
+
+### 📊 Archivos Modificados (Última Integración)
+
+| Archivo | Cambio | Estado |
+|---------|--------|--------|
+| **src/main.tsx** | initializePerformanceMonitoring() | ✅ |
+| **src/App.tsx** | ErrorButton component | ✅ |
+| **vite.config.ts** | sentryVitePlugin | ✅ |
+| **backend/Program.cs** | UseSentry() + test endpoint | ✅ |
+| **backend/ElMediadorDeSofia.csproj** | Sentry.AspNetCore 4.0.3 | ✅ |
+| **backend/appsettings.json** | Sentry DSN config | ✅ |
+| **SENTRY_INTEGRATION_SUMMARY.md** | Complete docs | ✅ |
 
 ---
 

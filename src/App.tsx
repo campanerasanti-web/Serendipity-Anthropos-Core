@@ -17,8 +17,11 @@ import { useSupabaseRealtime } from './hooks/useSupabaseRealtime';
 import { BarChart3, Settings, LayoutDashboard, Flame, Heart, Activity } from 'lucide-react';
 import * as Sentry from '@sentry/react';
 
-// 🧪 Componente de prueba para Sentry
+// 🧪 Componente de prueba para Sentry (solo en development)
 function ErrorButton() {
+  // Solo renderiza en modo development
+  if (!import.meta.env.DEV) return null;
+  
   return (
     <button
       onClick={() => {

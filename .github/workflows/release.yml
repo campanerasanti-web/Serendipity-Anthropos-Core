@@ -161,6 +161,60 @@ jobs:
           retention-days: 90
 
   # ===========================================
+  # JOB 3.5: Sentry Release Integration
+  # ===========================================
+  sentry-release:
+    name: 🔭 Create Sentry Release
+    runs-on: ubuntu-latest
+    needs: [validate, build-frontend]
+    
+    steps:
+      - name: 📂 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+        shell: bash
+
+      - name: 🏗️ Build with Sentry
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.serendipity.io
+          VITE_VERSION: ${{ needs.validate.outputs.version }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        shell: bash
+
+      - name: 🔭 Create Sentry Release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: serendipity-bros
+          SENTRY_PROJECT: serendipity-anthropos-core
+        with:
+          environment: production
+          version: ${{ needs.validate.outputs.version }}
+          sourcemaps: './dist'
+          finalize: true
+
+      - name: 📋 Log Sentry Release
+        run: |
+          echo "## 🔭 Sentry Release Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source Maps:** Uploaded ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dashboard:** https://serendipity-bros.sentry.io/" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
+  # ===========================================
   # JOB 4: Create Release Notes
   # ===========================================
   release-notes:
@@ -237,7 +291,7 @@ jobs:
   create-release:
     name: 🎉 Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [validate, build-backend, build-frontend, release-notes]
+    needs: [validate, build-backend, build-frontend, release-notes, sentry-release]
     
     steps:
       - name: 📂 Checkout code
@@ -319,7 +373,7 @@ jobs:
   release-summary:
     name: 📋 Release Summary
     runs-on: ubuntu-latest
-    needs: [validate, build-backend, build-frontend, create-release]
+    needs: [validate, build-backend, build-frontend, sentry-release, create-release]
     if: always()
     
     steps:
@@ -332,10 +386,12 @@ jobs:
           echo "| Validation | ${{ needs.validate.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Backend Build | ${{ needs.build-backend.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Frontend Build | ${{ needs.build-frontend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Sentry Release | ${{ needs.sentry-release.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Release Creation | ${{ needs.create-release.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Release Details" >> $GITHUB_STEP_SUMMARY
           echo "- **Version:** ${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Status:** ✅ Released" >> $GITHUB_STEP_SUMMARY
           echo "- **Pre-release:** ${{ needs.validate.outputs.prerelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Sentry:** https://serendipity-bros.sentry.io/" >> $GITHUB_STEP_SUMMARY
         shell: bash
