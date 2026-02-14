@@ -54,22 +54,22 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
 
       - name: 📥 Restore dependencies
-        run: dotnet restore backend/
+        run: dotnet restore backend/Tests/Tests.csproj
         shell: bash
 
       - name: 🧪 Run unit tests
         run: |
-          dotnet test backend/ \
+          dotnet test backend/Tests/Tests.csproj \
             --configuration Release \
             --no-restore \
             --logger "trx;LogFileName=test-results.trx" \
             --collect:"XPlat Code Coverage" \
             --results-directory ./test-results
         env:
-          ConnectionStrings__PostgreSQL: "Host=localhost;Port=5432;Database=serendipity_test;Username=test;Password=test"
+          DATABASE_URL: "Host=localhost;Port=5432;Database=serendipity_test;Username=test;Password=test"
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=serendipity_test;Username=test;Password=test"
         shell: bash
 
       - name: 📊 Test Results Summary
@@ -120,16 +120,15 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: true
 
       - name: 📥 Restore dependencies
-        run: dotnet restore backend/
+        run: dotnet restore backend/Tests/Tests.csproj
         shell: bash
 
       - name: 🔗 Run integration tests
         run: |
           echo "🔗 Running integration tests with WebApplicationFactory..."
-          dotnet test backend/ \
+          dotnet test backend/Tests/Tests.csproj \
             --configuration Release \
             --no-restore \
             --filter "Category=Integration" \
