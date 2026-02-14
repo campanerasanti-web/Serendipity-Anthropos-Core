@@ -195,6 +195,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Health check endpoint for Render
+app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }))
+    .WithName("HealthCheck")
+    .WithOpenApi();
+
 app.UseRouting();
 app.UseCors();
 app.UseAuthorization();
