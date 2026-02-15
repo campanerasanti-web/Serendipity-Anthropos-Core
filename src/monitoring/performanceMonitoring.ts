@@ -16,15 +16,8 @@ export const initializePerformanceMonitoring = () => {
   try {
     Sentry.init({
       dsn: dsn,
-      integrations: [
-        new Sentry.Replay({
-          maskAllText: true,
-          blockAllMedia: false,
-        }),
-      ],
+      integrations: [],
       tracesSampleRate: import.meta.env.DEV ? 1.0 : 0.1,
-      replaysSessionSampleRate: import.meta.env.DEV ? 1.0 : 0.1,
-      replaysOnErrorSampleRate: 1.0,
       environment: import.meta.env.MODE,
       release: '1.0.0',
       sendDefaultPii: true,
