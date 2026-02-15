@@ -242,16 +242,16 @@ const AppContent = () => {
 
 function App() {
   return (
-    <I18nProvider defaultLanguage="es" defaultRole="admin">
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <I18nProvider defaultLanguage="es" defaultRole="admin">
         <NotificationProvider>
           <ErrorBoundary>
             <AppContent />
           </ErrorBoundary>
         </NotificationProvider>
         <Toaster position="top-right" richColors />
-      </QueryClientProvider>
-    </I18nProvider>
+      </I18nProvider>
+    </QueryClientProvider>
   );
 }
 

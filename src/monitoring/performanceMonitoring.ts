@@ -6,16 +6,38 @@
 import * as Sentry from '@sentry/react';
 
 export const initializePerformanceMonitoring = () => {
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    integrations: [],
-    tracesSampleRate: import.meta.env.DEV ? 1.0 : 0.1,
-    environment: import.meta.env.MODE,
-    release: '1.0.0',
-    sendDefaultPii: true,
-  });
+  const dsn = import.meta.env.VITE_SENTRY_DSN;
+  
+  if (!dsn) {
+    console.warn('⚠️ VITE_SENTRY_DSN not configured. Sentry will not track errors.');
+    return;
+  }
 
-  console.log('✅ Sentry initialized for error tracking');
+  try {
+    Sentry.init({
+      dsn: dsn,
+      integrations: [
+        new Sentry.Replay({
+          maskAllText: true,
+          blockAllMedia: false,
+        }),
+      ],
+      tracesSampleRate: import.meta.env.DEV ? 1.0 : 0.1,
+      replaysSessionSampleRate: import.meta.env.DEV ? 1.0 : 0.1,
+      replaysOnErrorSampleRate: 1.0,
+      environment: import.meta.env.MODE,
+      release: '1.0.0',
+      sendDefaultPii: true,
+      beforeSend(event) {
+        // Opcional: filter eventos antes de enviar
+        return event;
+      },
+    });
+
+    console.log('✅ Sentry initialized successfully:', { dsn: dsn.substring(0, 30) + '...' });
+  } catch (error) {
+    console.error('❌ Failed to initialize Sentry:', error);
+  }
 };
 
 // Custom performance metrics
