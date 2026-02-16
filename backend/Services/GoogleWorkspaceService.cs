@@ -1,6 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Util.Store;
+using Google.Apis.Services;
+using System.IO;
+using System.Threading;
 
 namespace ElMediadorDeSofia.Services
 {
@@ -11,10 +16,51 @@ namespace ElMediadorDeSofia.Services
     public class GoogleWorkspaceService
     {
         private readonly ILogger<GoogleWorkspaceService> _logger;
+        private readonly IConfiguration _configuration;
+        private UserCredential? _credential;
+        private readonly string[] _scopes = new[]
+        {
+            "openid",
+            "email",
+            "profile",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        };
 
-        public GoogleWorkspaceService(ILogger<GoogleWorkspaceService> logger)
+        public GoogleWorkspaceService(ILogger<GoogleWorkspaceService> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+        }
+
+        /// <summary>
+        /// Inicia el flujo OAuth real con Google
+        /// </summary>
+        public async Task<UserCredential?> AuthorizeAsync()
+        {
+            try
+            {
+                var credPath = _configuration["GOOGLE_APPLICATION_CREDENTIALS"] ?? "Secrets/credentials.json";
+                if (string.IsNullOrEmpty(credPath) || !File.Exists(credPath))
+                {
+                    _logger.LogError($"No se encontró el archivo de credenciales: {credPath}");
+                    return null;
+                }
+                var clientSecrets = GoogleClientSecrets.FromFile(credPath);
+                _credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    clientSecrets.Secrets,
+                    _scopes,
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore("GoogleAuthTokens", true));
+                _logger.LogInformation("Google OAuth autorizado correctamente.");
+                return _credential;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en el flujo OAuth de Google");
+                return null;
+            }
         }
 
         /// <summary>
@@ -25,12 +71,33 @@ namespace ElMediadorDeSofia.Services
         {
             _logger.LogInformation($"Fetching Google Workspace profile for {email}");
 
-            // Mock data
+            if (_credential == null)
+            {
+                await AuthorizeAsync();
+            }
+            if (_credential != null)
+            {
+                var oauthService = new Google.Apis.Oauth2.v2.Oauth2Service(new BaseClientService.Initializer
+                {
+                    HttpClientInitializer = _credential,
+                    ApplicationName = "ElMediadorDeSofia"
+                });
+                var userInfo = await oauthService.Userinfo.Get().ExecuteAsync();
+                return new
+                {
+                    Email = userInfo.Email,
+                    DisplayName = userInfo.Name,
+                    IsActive = userInfo.VerifiedEmail,
+                    Picture = userInfo.Picture,
+                    Locale = userInfo.Locale
+                };
+            }
+            // fallback mock
             await Task.Delay(100);
             return new
             {
                 Email = email,
-                DisplayName = email.Split("@")[0],
+                DisplayName = email.Split("@")?[0],
                 IsActive = true,
                 Organization = "Serendipity Bros",
                 Department = "TET Nguyên Đán",

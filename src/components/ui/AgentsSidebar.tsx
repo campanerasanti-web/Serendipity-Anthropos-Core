@@ -286,17 +286,16 @@ export const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
           <button
             key={agent.id}
             onClick={() => openAgent(agent.id)}
-            className="relative p-3 rounded-full bg-slate-800/70 hover:bg-emerald-700 text-2xl shadow-lg transition-all animate-spin"
-            style={{ animationDuration: orbitSpeed }}
+            className={"orbiting-agent animate-spin"}
+            style={{
+              // @ts-ignore
+              '--orbit-duration': orbitSpeed
+            }}
             title={agent.name}
           >
             {agent.seed}
             {ideaByAgent[agent.id] && (
-              <span
-                className={`absolute -top-1 -right-1 text-xs rounded-full w-5 h-5 flex items-center justify-center shadow ${getIdeaClass(agent.id)}`}
-              >
-                💡
-              </span>
+              <span className="idea-bulb">💡</span>
             )}
           </button>
         ))}

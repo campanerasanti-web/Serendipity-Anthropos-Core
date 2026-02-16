@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { AuthProvider, useAuth, LoginForm, UserProfile } from './components/AuthManager';
+import Dashboard from './components/Dashboard';
+import { useNotification } from './hooks/useNotification';
+import { NotificationUniversal } from './components/NotificationUniversal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { I18nProvider } from './i18n/I18nContext';
+import styles from './styles/App.module.css';
 import { NotificationProvider } from './components/NotificationCenter';
 import ErrorBoundary from './components/ErrorBoundary';
 import ZenDashboard from './components/ZenDashboard';
@@ -60,98 +65,116 @@ const autonomicGlobal = initializeAutonomicSystem();
 
 const AppContent = () => {
   const [currentPage, setCurrentPage] = useState<Page>('serendipity');
-  
-  // 🫀 Sistema Nervioso Autónomo (hook para UI)
-  const autonomic = useAutonomicBody();
+  const { notifications, addNotification, markAsRead } = useNotification();
+  const { user, loading } = useAuth();
 
-  // 📊 Supabase Realtime - Invoices
-  const { data: supabaseInvoices = [], loading: loadingInvoices, error: invoiceError } = useSupabaseRealtime(
-    {
-      table: 'invoices',
-      event: '*',
-      onError: (error) => {
-        Sentry.captureException(error, {
-          tags: { source: 'supabase-invoices' },
-        });
-      },
-    }
-  );
-
-  // 📊 Supabase Realtime - Fixed Costs
-  const { data: supabaseFixedCosts = [], loading: loadingFixedCosts, error: costsError } = useSupabaseRealtime(
-    {
-      table: 'fixed_costs',
-      event: '*',
-      onError: (error) => {
-        Sentry.captureException(error, {
-          tags: { source: 'supabase-fixed-costs' },
-        });
-      },
-    }
-  );
-
-  const { data: stats } = useQuery({
-    queryKey: ['dashboard'],
-    queryFn: fetchUnifiedDashboard,
-    retry: 1
-  });
-
-  const { data: metrics = [] } = useQuery({
-    queryKey: ['last30Metrics'],
-    queryFn: fetchLast30DaysMetrics,
-    retry: 1
-  });
-
-  const { data: invoicesData } = useQuery({
-    queryKey: ['invoices_list'],
-    queryFn: async () => {
-      const result = await localDataService.fetchInvoices();
-      return result.facturas || [];
-    },
-    retry: 1
-  });
-
-  const { data: fixedCostsData } = useQuery({
-    queryKey: ['fixedCosts_list'],
-    queryFn: async () => {
-      const result = await localDataService.fetchFixedCosts();
-      return result.costosFijos || [];
-    },
-    retry: 1
-  });
-
-  const invoices = invoicesData || [];
-  const fixedCosts = fixedCostsData || [];
-
-  const navContainerStyle: React.CSSProperties = {
-    background: 'linear-gradient(to right, rgba(30, 41, 59, 0.9) 0%, rgba(20, 27, 45, 0.9) 100%)',
-    borderBottom: '2px solid rgba(59, 130, 246, 0.2)',
-    padding: '1rem 2rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '2rem'
+  // Ejemplo: agregar notificación universal
+  const handleAddNotification = () => {
+    addNotification({
+      id: Date.now().toString(),
+      type: 'info',
+      message: '🌱 ¡Semilla de notificación germinada!',
+      createdAt: new Date(),
+      read: false
+    });
   };
 
-  const navButtonStyle = (isActive: boolean): React.CSSProperties => ({
-    padding: '0.75rem 1.5rem',
-    borderRadius: '0.5rem',
-    border: 'none',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '0.875rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    transition: 'all 0.3s ease',
-    background: isActive ? 'rgb(59, 130, 246)' : 'rgba(59, 130, 246, 0.2)',
-    color: 'white'
-  });
+  if (loading) return <div className={styles.appContainer}><div style={{color: 'white', textAlign: 'center', marginTop: '4rem'}}>Cargando autenticación...</div></div>;
+  if (!user) return <LoginForm />;
 
   return (
-    <div style={{ minHeight: '100vh' }}>
-      <nav style={navContainerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+    <div className={styles.appContainer}>
+      <div style={{ position: 'absolute', top: 16, right: 16 }}><UserProfile /></div>
+      <nav className={styles.navContainer}>
+        <div className={styles.navTitle}>
+          <h1> Serendipity Dashboard</h1>
+        </div>
+
+        <div className={styles.navButtons}>
+          <button className={styles.navButton} onClick={handleAddNotification}>
+            🌱 Notificar
+          </button>
+                {/* Notificaciones universales germinadas */}
+                <div style={{ position: 'fixed', top: 80, right: 24, zIndex: 1000, minWidth: 320 }}>
+                  {notifications.map(n => (
+                    <NotificationUniversal key={n.id} notification={n} onRead={markAsRead} />
+                  ))}
+                </div>
+          <button onClick={() => setCurrentPage('serendipity')} className={navButtonClass(currentPage === 'serendipity')}>
+            <LayoutDashboard width={16} height={16} />
+            Serendipity
+          </button>
+          <button onClick={() => setCurrentPage('dashboard')} className={navButtonClass(currentPage === 'dashboard')}>
+            <LayoutDashboard width={16} height={16} />
+            Zen
+          </button>
+          <button onClick={() => setCurrentPage('hermetic')} className={navButtonClass(currentPage === 'hermetic')}>
+            <Flame width={16} height={16} />
+            Hermética
+          </button>
+          <button onClick={() => setCurrentPage('sofia')} className={navButtonClass(currentPage === 'sofia')}>
+            <Activity width={16} height={16} />
+            Sofia
+          </button>
+          <button onClick={() => setCurrentPage('visualizations')} className={navButtonClass(currentPage === 'visualizations')}>
+            <BarChart3 width={16} height={16} />
+            Visualizaciones
+          </button>
+          <button onClick={() => setCurrentPage('admin')} className={navButtonClass(currentPage === 'admin')}>
+            <Settings width={16} height={16} />
+            Admin
+          </button>
+
+          {/* 🧪 Botón de prueba de Sentry */}
+          <ErrorButton />
+
+          {/* 🫀 Indicador del Sistema Nervioso Autónomo */}
+          <div className={styles.infoBox} style={{
+            background: autonomic.healthStatus === 'healthy' ? 'rgba(34, 197, 94, 0.2)' :
+                       autonomic.healthStatus === 'degraded' ? 'rgba(251, 146, 60, 0.2)' :
+                       'rgba(239, 68, 68, 0.2)',
+            border: `1px solid ${autonomic.healthStatus === 'healthy' ? 'rgb(34, 197, 94)' :
+                                autonomic.healthStatus === 'degraded' ? 'rgb(251, 146, 60)' :
+                                'rgb(239, 68, 68)'}`
+          }}>
+            <Heart width={16} height={16} style={{
+              animation: 'pulse 1.5s ease-in-out infinite',
+              color: autonomic.healthStatus === 'healthy' ? 'rgb(34, 197, 94)' :
+                     autonomic.healthStatus === 'degraded' ? 'rgb(251, 146, 60)' :
+                     'rgb(239, 68, 68)'
+            }} />
+            <span className={styles.infoText}>
+              {autonomic.healthStatus === 'healthy' ? '✓ Sistema Vivo' :
+               autonomic.healthStatus === 'degraded' ? '⚠ Conexión Lenta' :
+               '✗ Desconectado'}
+            </span>
+            <button 
+              onClick={() => autonomic.syncNow()}
+              className={styles.navButton}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                marginLeft: '0.5rem',
+                fontSize: '0.75rem',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '0.25rem',
+              }}
+            >
+              Sincronizar
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className={styles.gradientBg}>
+        {currentPage === 'serendipity' && <SerendipityDashboard />}
+        {currentPage === 'dashboard' && <Dashboard />}
+        {currentPage === 'hermetic' && <HermeticBodyDashboard />}
+        {currentPage === 'sofia' && <SofiaAgentsDashboard />}
+        {currentPage === 'visualizations' && <VisualizationDashboard />}
+        {currentPage === 'admin' && <AdminDashboard />}
+      </div>
+    </div>
+  );
           <h1 style={{ color: 'white', fontSize: '1.5rem', margin: 0 }}> Serendipity Dashboard</h1>
         </div>
 
@@ -244,12 +267,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider defaultLanguage="es" defaultRole="admin">
-        <NotificationProvider>
-          <ErrorBoundary>
-            <AppContent />
-          </ErrorBoundary>
-        </NotificationProvider>
-        <Toaster position="top-right" richColors />
+        <AuthProvider>
+          <NotificationProvider>
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
+          </NotificationProvider>
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
       </I18nProvider>
     </QueryClientProvider>
   );

@@ -1,0 +1,15 @@
+{
+  "Timestamp": "2026-02-15T22:00:00.4284976Z",
+  "TotalAccesses": 7,
+  "AssignedAccesses": 5,
+  "UnassignedAccesses": 2,
+  "AccessMap": {
+    "/api/admin": "admin-team",
+    "/api/config": "UNASSIGNED_ACCESS",
+    "/api/users": "user-service",
+    "/api/payments": "finance-team",
+    "/api/reports": "analytics-team",
+    "/api/audit": "security-team",
+    "/api/system": "UNASSIGNED_ACCESS"
+  }
+}

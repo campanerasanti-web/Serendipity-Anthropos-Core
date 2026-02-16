@@ -1,3 +1,13 @@
+        /// <summary>
+        /// GET /api/google-workspace/google-users
+        /// Lista todos los usuarios autenticados con Google OAuth
+        /// </summary>
+        [HttpGet("google-users")]
+        public IActionResult GetGoogleUsers()
+        {
+            var users = _db.GoogleUsers.OrderByDescending(u => u.CreatedAt).ToList();
+            return Ok(users);
+        }
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,10 +23,100 @@ namespace ElMediadorDeSofia.Controllers
         private readonly GoogleWorkspaceService _googleWorkspaceService;
         private readonly ILogger<GoogleWorkspaceController> _logger;
 
-        public GoogleWorkspaceController(GoogleWorkspaceService googleWorkspaceService, ILogger<GoogleWorkspaceController> logger)
+        private readonly Data.AppDbContext _db;
+        public GoogleWorkspaceController(GoogleWorkspaceService googleWorkspaceService, ILogger<GoogleWorkspaceController> logger, Data.AppDbContext db)
         {
             _googleWorkspaceService = googleWorkspaceService;
             _logger = logger;
+            _db = db;
+        }
+
+        /// <summary>
+        /// GET /api/auth/google/login
+        /// Inicia el flujo OAuth con Google
+        /// </summary>
+        [HttpGet("/api/auth/google/login")]
+        public async Task<IActionResult> GoogleLogin()
+        {
+            var clientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+            var callbackUrl = Environment.GetEnvironmentVariable("GOOGLE_OAUTH_CALLBACK_URL");
+            var scopes = new[] {
+                "https://www.googleapis.com/auth/userinfo.email",
+                "https://www.googleapis.com/auth/userinfo.profile"
+            };
+            var scopeParam = string.Join(" ", scopes);
+            var authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={callbackUrl}&response_type=code&scope={Uri.EscapeDataString(scopeParam)}&access_type=offline&prompt=consent";
+            return Redirect(authUrl);
+        }
+
+        /// <summary>
+        /// GET /api/auth/google/callback
+        /// Callback de Google OAuth
+        /// </summary>
+        [HttpGet("/api/auth/google/callback")]
+        public async Task<IActionResult> GoogleCallback([FromQuery] string code)
+        {
+            if (string.IsNullOrEmpty(code))
+                return BadRequest(new { error = "Missing code" });
+
+            var clientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+            var clientSecret = ""; // Si tienes client_secret, colócalo aquí o como variable de entorno
+            var callbackUrl = Environment.GetEnvironmentVariable("GOOGLE_OAUTH_CALLBACK_URL");
+
+            using var http = new System.Net.Http.HttpClient();
+            var tokenRequest = new System.Net.Http.FormUrlEncodedContent(new[]
+            {
+                new System.Collections.Generic.KeyValuePair<string, string>("code", code),
+                new System.Collections.Generic.KeyValuePair<string, string>("client_id", clientId),
+                new System.Collections.Generic.KeyValuePair<string, string>("client_secret", clientSecret),
+                new System.Collections.Generic.KeyValuePair<string, string>("redirect_uri", callbackUrl),
+                new System.Collections.Generic.KeyValuePair<string, string>("grant_type", "authorization_code")
+            });
+            var tokenResponse = await http.PostAsync("https://oauth2.googleapis.com/token", tokenRequest);
+            var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+            if (!tokenResponse.IsSuccessStatusCode)
+                return StatusCode(500, new { error = "Token exchange failed", details = tokenJson });
+
+            var tokenData = System.Text.Json.JsonDocument.Parse(tokenJson).RootElement;
+            var accessToken = tokenData.GetProperty("access_token").GetString();
+
+            // Obtener datos del usuario
+            http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            var userInfoResponse = await http.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+            var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
+            if (!userInfoResponse.IsSuccessStatusCode)
+                return StatusCode(500, new { error = "User info failed", details = userInfoJson });
+
+            // Parsear datos del usuario
+            var userElement = System.Text.Json.JsonDocument.Parse(userInfoJson).RootElement;
+            var googleId = userElement.GetProperty("id").GetString();
+            var email = userElement.GetProperty("email").GetString();
+            var name = userElement.TryGetProperty("name", out var n) ? n.GetString() : null;
+            var picture = userElement.TryGetProperty("picture", out var p) ? p.GetString() : null;
+
+            // Guardar o actualizar usuario en base de datos
+            var user = _db.GoogleUsers.FirstOrDefault(u => u.GoogleId == googleId);
+            if (user == null)
+            {
+                user = new Models.GoogleUser
+                {
+                    GoogleId = googleId!,
+                    Email = email!,
+                    Name = name,
+                    Picture = picture
+                };
+                _db.GoogleUsers.Add(user);
+            }
+            else
+            {
+                user.Email = email!;
+                user.Name = name;
+                user.Picture = picture;
+            }
+            await _db.SaveChangesAsync();
+
+            // Devuelve los datos reales del usuario autenticado
+            return Ok(new { token = tokenData, user });
         }
 
         /// <summary>

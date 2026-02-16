@@ -4,27 +4,27 @@
     "slug": "serendipity-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    // "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0f172a"
-    },
+    // "splash": {
+    //   "image": "./assets/splash.png",
+    //   "resizeMode": "contain",
+    //   "backgroundColor": "#0f172a"
+    // },
     "ios": {
       "supportsTabletMode": true,
       "bundleIdentifier": "com.campanerasanti.serendipity"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0f172a"
-      },
+      // "adaptiveIcon": {
+      //   "foregroundImage": "./assets/adaptive-icon.png",
+      //   "backgroundColor": "#0f172a"
+      // },
       "package": "com.campanerasanti.serendipity"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
+    // "web": {
+    //   "favicon": "./assets/favicon.png"
+    // },
     "plugins": [
       "expo-router",
       [
@@ -34,7 +34,7 @@
             "minSdkVersion": 21
           },
           "ios": {
-            "deploymentTarget": "13.0"
+            "deploymentTarget": "15.1"
           }
         }
       ]

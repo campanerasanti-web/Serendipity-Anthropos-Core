@@ -56,7 +56,7 @@ namespace ElMediadorDeSofia.BackendAgents
 
         public BackendGardenerAgent(BackendGardenerConfig config, ILogger<BackendGardenerAgent>? logger = null)
         {
-            _config = config;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger;
             _report = new BackendReport
             {
@@ -93,7 +93,7 @@ namespace ElMediadorDeSofia.BackendAgents
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "❌ Error ejecutando Jardinero del Backend");
-                throw;
+                // No relanzar para evitar caída de procesos automatizados
             }
 
             return _report;
@@ -106,10 +106,10 @@ namespace ElMediadorDeSofia.BackendAgents
         {
             _logger?.LogInformation("📋 Fase 1: Auditoría...");
 
-            var rules = AllBackendRules.GetAll();
+            var rules = AllBackendRules.GetAll() ?? new List<IValidationRule>();
 
             // Filtrar por categorías configuradas
-            if (_config.Categories.Any())
+            if (_config.Categories != null && _config.Categories.Any())
             {
                 rules = rules.Where(r => _config.Categories.Contains(r.Category)).ToList();
             }
@@ -119,7 +119,6 @@ namespace ElMediadorDeSofia.BackendAgents
             foreach (var rule in rules)
             {
                 _logger?.LogInformation($"  Validando: {rule.Name}");
-                
                 try
                 {
                     var result = await rule.ValidateAsync();
@@ -137,7 +136,7 @@ namespace ElMediadorDeSofia.BackendAgents
                 }
                 catch (Exception ex)
                 {
-                    _logger?.LogError(ex, $"    ⚠️ Error validando regla {rule.Id}");
+                    _logger?.LogError(ex, $"    ⚠️ Error validando regla {rule?.Id}");
                     _report.Summary.RulesFailed++;
                 }
             }
@@ -152,10 +151,10 @@ namespace ElMediadorDeSofia.BackendAgents
         {
             _logger?.LogInformation("🔧 Fase 2: Reparación y Mantenimiento...");
 
-            var tasks = AllBackendTasks.GetAll();
+            var tasks = AllBackendTasks.GetAll() ?? new List<IBackendTask>();
 
             // Filtrar por prioridades configuradas
-            if (_config.Priorities.Any())
+            if (_config.Priorities != null && _config.Priorities.Any())
             {
                 tasks = tasks.Where(t => _config.Priorities.Contains(t.Priority)).ToList();
             }
@@ -165,7 +164,6 @@ namespace ElMediadorDeSofia.BackendAgents
             foreach (var task in tasks)
             {
                 _logger?.LogInformation($"  Ejecutando: {task.Name}");
-
                 try
                 {
                     var result = await task.ExecuteAsync();
@@ -184,7 +182,7 @@ namespace ElMediadorDeSofia.BackendAgents
                 }
                 catch (Exception ex)
                 {
-                    _logger?.LogError(ex, $"    ❌ Error ejecutando tarea {task.Id}");
+                    _logger?.LogError(ex, $"    ❌ Error ejecutando tarea {task?.Id}");
                     _report.Summary.TasksFailed++;
                 }
             }
@@ -530,15 +528,29 @@ namespace ElMediadorDeSofia.BackendAgents
 
             if (_config.OutputFormat == "markdown" || _config.OutputFormat == "both")
             {
-                var markdown = generator.GenerateMarkdownReport(_report);
-                System.IO.File.WriteAllText("BACKEND_GARDENER_REPORT.md", markdown);
-                _logger?.LogInformation("📄 Reporte Markdown guardado: BACKEND_GARDENER_REPORT.md");
+                try
+                {
+                    var markdown = generator.GenerateMarkdownReport(_report);
+                    System.IO.File.WriteAllText("BACKEND_GARDENER_REPORT.md", markdown);
+                    _logger?.LogInformation("📄 Reporte Markdown guardado: BACKEND_GARDENER_REPORT.md");
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "❌ Error guardando reporte Markdown");
+                }
             }
 
             if (_config.OutputFormat == "console" || _config.OutputFormat == "both")
             {
-                var consoleReport = generator.GenerateConsoleReport(_report);
-                Console.WriteLine(consoleReport);
+                try
+                {
+                    var consoleReport = generator.GenerateConsoleReport(_report);
+                    Console.WriteLine(consoleReport);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "❌ Error mostrando reporte en consola");
+                }
             }
         }
 

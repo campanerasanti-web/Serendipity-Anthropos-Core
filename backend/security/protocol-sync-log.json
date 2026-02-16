@@ -1,0 +1,14 @@
+[
+  {
+    "Timestamp": "2026-02-15T22:00:00.4368259Z",
+    "ProtocolsSync": [
+      "PROTO-001: Accesos (SEC-001, SEC-002)",
+      "PROTO-002: Integridad (SEC-003)",
+      "PROTO-003: Vigilancia nocturna (SEC-004)",
+      "PROTO-004: Agentes (SEC-005)",
+      "PROTO-005: Datos (SEC-006)",
+      "PROTO-006: Operaciones (SEC-007)",
+      "PROTO-007: Incidentes"
+    ]
+  }
+]

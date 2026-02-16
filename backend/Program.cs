@@ -77,7 +77,7 @@ builder.Services.AddScoped<OrderReportService>();
 builder.Services.AddScoped<TETReadinessService>();
 builder.Services.AddScoped<ChineseMedicineService>();
 builder.Services.AddScoped<PersonalWellbeingService>();
-builder.Services.AddScoped<GoogleWorkspaceService>();
+builder.Services.AddScoped<GoogleWorkspaceService>(); // IConfiguration is injected automatically
 builder.Services.AddSingleton<EventDispatcher>();
 
 // OpsGardener - Agente de vigilancia operativa

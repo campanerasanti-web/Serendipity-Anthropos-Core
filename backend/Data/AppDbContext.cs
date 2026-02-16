@@ -22,6 +22,9 @@ namespace ElMediadorDeSofia.Data
         // Protocolo TET Nguyên Đán - Disponibilidad y Preparación
         public DbSet<TETReadinessRecord> TETReadiness { get; set; } = null!;
 
+
+        // Usuarios autenticados con Google
+        public DbSet<GoogleUser> GoogleUsers { get; set; } = null!;
         // Bienestar Personal - Paz Interior, Presencia, Automatización
         public DbSet<PersonalWellbeingRecord> PersonalWellbeing { get; set; } = null!;
 

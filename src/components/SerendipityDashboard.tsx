@@ -21,6 +21,7 @@ import GlobalAssistantBubble from './GlobalAssistantBubble';
 import apiClient from '../api/apiClient';
 import { fetchSerendipityDashboard } from '../services/queries';
 import { useFixedCostsRealtime, useInvoicesRealtime } from '../hooks/useRealtimeSubscription';
+import SerendipityReportDashboard from './SerendipityReportDashboard';
 
 interface FinancialState {
   monthlyRevenue: number;
@@ -385,9 +386,13 @@ export const SerendipityDashboard: React.FC = () => {
                     {financial.praraRevenuePercentage.toFixed(1)}%
                   </span>
                 </div>
-                <div className="prara-bar heartbeat-bar" style={{
-                  background: `linear-gradient(to right, ${financial.praraRevenuePercentage > 75 ? '#ff4444' : '#ff9800'} 0%, ${financial.praraRevenuePercentage > 75 ? '#ff4444' : '#ff9800'} ${financial.praraRevenuePercentage}%, #e0e0e0 ${financial.praraRevenuePercentage}%, #e0e0e0 100%)`
-                }} />
+                <div
+                  className="prara-bar heartbeat-bar"
+                  style={{
+                    // @ts-ignore
+                    '--prara-bar-bg': `linear-gradient(to right, ${financial.praraRevenuePercentage > 75 ? '#ff4444' : '#ff9800'} 0%, ${financial.praraRevenuePercentage > 75 ? '#ff4444' : '#ff9800'} ${financial.praraRevenuePercentage}%, #e0e0e0 ${financial.praraRevenuePercentage}%, #e0e0e0 100%)`
+                  }}
+                />
               </div>
             </div>
 
@@ -495,7 +500,10 @@ export const SerendipityDashboard: React.FC = () => {
                     <div 
                       key={idx} 
                       className={`alert-card ${alert.severity === 'CRITICAL' ? 'critical-heartbeat' : alert.severity === 'HIGH' ? 'high-pulse' : ''} ${isExpanded ? 'expanded' : ''}`}
-                      style={{ borderLeftColor: getAlertColor(alert.severity) }}
+                      style={{
+                        // @ts-ignore
+                        '--alert-border-color': getAlertColor(alert.severity)
+                      }}
                     >
                       {alert.severity === 'CRITICAL' && <div className="alert-pulse"></div>}
                   <div className="alert-header">

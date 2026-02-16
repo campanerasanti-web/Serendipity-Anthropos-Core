@@ -1,0 +1,31 @@
+.orbiting-agent {
+  position: relative;
+  padding: 0.75rem;
+  border-radius: 50%;
+  background: rgba(30, 41, 59, 0.7);
+  color: #fff;
+  font-size: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transition: background 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  outline: none;
+  animation-duration: var(--orbit-duration, 2s);
+}
+.orbiting-agent:hover {
+  background: #059669;
+}
+.orbiting-agent .idea-bulb {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: #facc15;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}

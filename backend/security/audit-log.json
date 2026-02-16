@@ -1,0 +1,14 @@
+[
+  {
+    "Timestamp": "2026-02-15T22:00:00.2866618Z",
+    "ChecksPerformed": [
+      "\u2705 Verificaci\u00F3n de accesos",
+      "\u2705 Verificaci\u00F3n de endpoints",
+      "\u2705 Verificaci\u00F3n de integridad",
+      "\u2705 Escaneo de actividad nocturna",
+      "\u2705 Validaci\u00F3n de agentes",
+      "\u2705 Validaci\u00F3n de tokens",
+      "\u2705 Registro de cambios"
+    ]
+  }
+]

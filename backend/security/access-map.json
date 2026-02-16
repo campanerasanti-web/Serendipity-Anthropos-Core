@@ -1,9 +1,9 @@
 {
   "/api/admin": "admin-team",
-  "/api/config": "",
+  "/api/config": "UNASSIGNED_ACCESS",
   "/api/users": "user-service",
   "/api/payments": "finance-team",
   "/api/reports": "analytics-team",
   "/api/audit": "security-team",
-  "/api/system": ""
+  "/api/system": "UNASSIGNED_ACCESS"
 }

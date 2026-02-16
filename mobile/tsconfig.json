@@ -6,7 +6,9 @@
     "forceConsistentCasingInFileNames": true,
     "jsxImportSource": "react",
     "jsx": "react-jsx",
-    "lib": ["ES2020"],
+    "lib": [
+      "ES2020"
+    ],
     "module": "ESNext",
     "moduleResolution": "node",
     "noEmit": true,
@@ -14,9 +16,18 @@
     "strict": true,
     "resolveJsonModule": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "src/*"
+      ]
     }
   },
-  "extends": "expo/tsconfig",
-  "include": ["app/**/*.ts", "app/**/*.tsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "extends": "expo/tsconfig.base"
 }

@@ -1,0 +1,13 @@
+{
+  "Timestamp": "2026-02-15T22:00:00.2962411Z",
+  "TotalFiles": 5,
+  "VerifiedFiles": [],
+  "MissingFiles": [
+    "Program.cs",
+    "appsettings.json",
+    "backend/ElMediadorDeSofia.csproj",
+    "backend/Services/SecurityAgents/SecurityGardenerAgent.cs",
+    ".env"
+  ],
+  "MismatchedHashes": []
+}
