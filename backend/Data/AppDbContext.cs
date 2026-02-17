@@ -8,7 +8,8 @@ namespace ElMediadorDeSofia.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-
+        public DbSet<Settings> Settings { get; set; } = null!;
+        public DbSet<WorkspaceIntegration> WorkspaceIntegrations { get; set; } = null!;
         public DbSet<Lot> Lots { get; set; } = null!;
         public DbSet<Invoice> Invoices { get; set; } = null!;
         public DbSet<EventRecord> EventRecords { get; set; } = null!;

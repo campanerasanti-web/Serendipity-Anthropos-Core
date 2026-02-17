@@ -43,20 +43,20 @@ namespace ElMediadorDeSofia.Services.CoreAgents
     public class SelfGardenerCore
     {
         private readonly ILogger<SelfGardenerCore> _logger;
-        private readonly OpsGardenerAgent _opsGardener;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly SecurityGardenerAgent _securityGardener;
         private readonly IEnumerable<ISelfSignalSource> _signalSources;
         private readonly ISelfGardenerReportWriter _reportWriter;
 
         public SelfGardenerCore(
             ILogger<SelfGardenerCore> logger,
-            OpsGardenerAgent opsGardener,
+            IServiceScopeFactory scopeFactory,
             SecurityGardenerAgent securityGardener,
             IEnumerable<ISelfSignalSource> signalSources,
             ISelfGardenerReportWriter reportWriter)
         {
             _logger = logger;
-            _opsGardener = opsGardener;
+            _scopeFactory = scopeFactory;
             _securityGardener = securityGardener;
             _signalSources = signalSources;
             _reportWriter = reportWriter;
@@ -68,6 +68,12 @@ namespace ElMediadorDeSofia.Services.CoreAgents
 
             var logs = new List<string>();
             var state = new SelfState();
+
+            OpsGardenerAgent _opsGardener;
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                _opsGardener = scope.ServiceProvider.GetRequiredService<OpsGardenerAgent>();
+            }
 
             try
             {

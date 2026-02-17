@@ -10,14 +10,12 @@ namespace ElMediadorDeSofia.Workers
 {
     public class EventProcessorWorker : BackgroundService
     {
-        private readonly EventService _events;
-        private readonly AppDbContext _db;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<EventProcessorWorker> _logger;
 
-        public EventProcessorWorker(EventService events, AppDbContext db, ILogger<EventProcessorWorker> logger)
+        public EventProcessorWorker(IServiceScopeFactory scopeFactory, ILogger<EventProcessorWorker> logger)
         {
-            _events = events;
-            _db = db;
+            _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
@@ -27,6 +25,8 @@ namespace ElMediadorDeSofia.Workers
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                using var scope = _scopeFactory.CreateScope();
+                var _events = scope.ServiceProvider.GetRequiredService<EventService>();
                 try
                 {
                     var batch = await _events.GetUnprocessedEventsAsync(100);
@@ -38,13 +38,9 @@ namespace ElMediadorDeSofia.Workers
 
                     foreach (var ev in batch)
                     {
-                        // Simple processing: for demo, just mark processed and log
                         _logger.LogInformation("Processing event {EventType} for {AggregateType}:{AggregateId}", ev.EventType, ev.AggregateType, ev.AggregateId);
-
-                        // In a real system, you would update denormalized read models here
                         ev.Processed = true;
                         ev.ProcessedAt = DateTime.UtcNow;
-
                         await _events.MarkProcessedAsync(ev);
                     }
                 }

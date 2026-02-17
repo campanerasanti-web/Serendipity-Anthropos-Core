@@ -1,7 +1,9 @@
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ElMediadorDeSofia.Services
 {
@@ -12,12 +14,14 @@ namespace ElMediadorDeSofia.Services
     public class EventDispatcher
     {
         private readonly ILogger<EventDispatcher> _logger;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly List<Func<object, Task>> _subscribers = new();
         private readonly object _syncRoot = new();
 
-        public EventDispatcher(ILogger<EventDispatcher> logger)
+        public EventDispatcher(ILogger<EventDispatcher> logger, IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
+            _scopeFactory = scopeFactory;
         }
 
         /// <summary>
@@ -46,12 +50,24 @@ namespace ElMediadorDeSofia.Services
         /// </summary>
         public async Task PublishAsync(string eventType, object payload)
         {
-            var eventData = new
+
+
+            var payloadJson = System.Text.Json.JsonSerializer.Serialize(payload);
+            var eventRecord = new EventRecord
             {
-                Type = eventType,
+                Id = Guid.NewGuid(),
+                AggregateType = "Generic", // Ajustar según el contexto si es necesario
+                EventType = eventType,
                 Timestamp = DateTime.UtcNow,
-                Payload = payload
+                Payload = payloadJson
             };
+
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var _context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                _context.EventRecords.Add(eventRecord);
+                await _context.SaveChangesAsync();
+            }
 
             _logger.LogInformation("Publishing event: {eventType}", eventType);
 
@@ -64,7 +80,7 @@ namespace ElMediadorDeSofia.Services
             var tasks = new List<Task>();
             foreach (var subscriber in subscribersSnapshot)
             {
-                tasks.Add(subscriber(eventData));
+                tasks.Add(subscriber(eventRecord));
             }
 
             await Task.WhenAll(tasks);

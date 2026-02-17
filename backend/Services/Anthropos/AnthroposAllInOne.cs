@@ -235,7 +235,7 @@ namespace ElMediadorDeSofia.Services.Anthropos
     public class AnthroposCore
     {
         private readonly ILogger<AnthroposCore> _logger;
-        private readonly OpsGardenerAgent _ops;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly SecurityGardenerAgent _security;
         private readonly IEnumerable<IAnthroposSignalSource> _signals;
         private readonly IAnthroposReportWriter _report;
@@ -245,7 +245,7 @@ namespace ElMediadorDeSofia.Services.Anthropos
 
         public AnthroposCore(
             ILogger<AnthroposCore> logger,
-            OpsGardenerAgent ops,
+            IServiceScopeFactory scopeFactory,
             SecurityGardenerAgent security,
             IEnumerable<IAnthroposSignalSource> signals,
             IAnthroposReportWriter report,
@@ -254,7 +254,7 @@ namespace ElMediadorDeSofia.Services.Anthropos
             IRitualEngine rituals)
         {
             _logger = logger;
-            _ops = ops;
+            _scopeFactory = scopeFactory;
             _security = security;
             _signals = signals;
             _report = report;
@@ -269,6 +269,12 @@ namespace ElMediadorDeSofia.Services.Anthropos
 
             var logs = new List<string>();
             var state = new AnthroposState();
+
+            OpsGardenerAgent _ops;
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                _ops = scope.ServiceProvider.GetRequiredService<OpsGardenerAgent>();
+            }
 
             try
             {

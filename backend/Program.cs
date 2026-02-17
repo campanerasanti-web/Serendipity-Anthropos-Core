@@ -80,6 +80,9 @@ builder.Services.AddScoped<PersonalWellbeingService>();
 builder.Services.AddScoped<GoogleWorkspaceService>(); // IConfiguration is injected automatically
 builder.Services.AddSingleton<EventDispatcher>();
 
+// Registrar el EventProcessorWorker como HostedService
+builder.Services.AddHostedService<EventProcessorWorker>();
+
 // OpsGardener - Agente de vigilancia operativa
 var opsConfig = OpsGardenerConfigFactory.DevelopmentConfig();
 builder.Services.AddSingleton(opsConfig);
@@ -183,7 +186,7 @@ builder.Services.AddHostedService<SofiaMonitoringWorker>();
 // ========================
 // Add workers - NOW ENABLED with proper error handling
 // These workers process events and projections asynchronously
-builder.Services.AddHostedService<EventProcessorWorker>();
+builder.Services.AddHostedService<OrderEventProjector>();
 builder.Services.AddHostedService<OrderEventProjector>();
 
 // ✅ Workers are now active - they handle async event processing automatically
@@ -200,7 +203,19 @@ builder.Services.AddSwaggerGen();
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+    var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
+    options.AddDefaultPolicy(policy => {
+        if (!string.IsNullOrEmpty(frontendUrl))
+        {
+            policy.WithOrigins(frontendUrl)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+        else
+        {
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        }
+    });
 });
 
 var app = builder.Build();
