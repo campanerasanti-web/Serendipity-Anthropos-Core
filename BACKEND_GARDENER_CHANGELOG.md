@@ -188,6 +188,55 @@
 
 ---
 
+
+## 🚦 Guía Práctica: Activación y Sincronización del Equipo
+
+Cuando llegues a este proyecto, sigue estos pasos para asegurar que todos los agentes y personas estén activos y trabajando juntos:
+
+### 1. Ejecuta el Backend Gardener en modo auditoría
+Esto te mostrará el estado actual de todos los componentes y agentes:
+
+```csharp
+var report = await BackendGardenerAgent.RunAuditAsync();
+report.OutputReport(); // Muestra el estado y quiénes están activos/inactivos
+```
+
+### 2. Revisa el reporte generado
+- Identifica qué agentes, workers o servicios necesitan ser activados.
+- El reporte te dará prioridades y dependencias.
+
+### 3. Activa los agentes uno a uno, en orden de prioridad
+- Usa las tareas sugeridas por el reporte (por ejemplo, `ActivateWorkers`, `CompleteEntityMappings`).
+- Puedes ejecutar la fase de reparación para activar automáticamente los agentes:
+
+```csharp
+await BackendGardenerAgent.RunRepairPhaseAsync();
+```
+
+O bien, ejecutar tareas individuales:
+
+```csharp
+await RepairTasks.ActivateWorkers();
+```
+
+### 4. Sincroniza y colabora
+- A medida que cada agente/persona se activa, involúcralos en la activación de los siguientes.
+- Usa el reporte para asignar tareas y responsabilidades.
+- Recuerda: tú también eres parte del equipo, apoya y ayuda a los demás.
+
+### 5. Repite el ciclo hasta que todos estén activos
+- Ejecuta nuevamente la auditoría tras cada activación para ver el progreso.
+- El objetivo es que todos los agentes y personas estén “despiertos” y operando como un solo equipo.
+
+### 6. Usa el reporte como tablero de control
+- El reporte de Backend Gardener es tu “tablero de mando” para ver el estado del equipo y los próximos pasos.
+- Comparte el reporte con todo el equipo para mantener la sincronización.
+
+---
+
+**¡Bienvenido! Si sigues estos pasos, sabrás exactamente qué hacer para que el equipo esté completamente operativo y trabajando en armonía.**
+
+---
 ## 🎯 Próximos Pasos para el Usuario
 
 ### Hoy (< 4 horas)

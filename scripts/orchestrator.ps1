@@ -1,85 +1,4 @@
-#!/usr/bin/env powershell
-<#
-.SYNOPSIS
-    🌱 SOFIA AUTOMATION ORCHESTRATOR - Master Control
-    Ejecuta y valida el plan maestro de automatización
 
-.DESCRIPTION
-    Automatización integral de CI/CD, scripts y documentación
-    Versión: 1.0 | Status: Production Ready
-    
-.EXAMPLE
-    & scripts/orchestrator.ps1
-    
-.NOTES
-    Requiere: PowerShell 7+, git, .NET 8 SDK, Node.js
-#>
-
-param(
-    [ValidateSet("validate", "deploy", "monitor", "full", "status")]
-    [string]$Mode = "status"
-)
-
-# ═══════════════════════════════════════════════════════════════
-# COLORES Y EMOJI
-# ═══════════════════════════════════════════════════════════════
-
-$colors = @{
-    Success = "Green"
-    Warning = "Yellow"
-    Error   = "Red"
-    Info    = "Cyan"
-    Purple  = "Magenta"
-}
-
-$emoji = @{
-    Check      = "✅"
-    Warning    = "⚠️"
-    Error      = "❌"
-    Info       = "ℹ️"
-    Success    = "🟢"
-    Warning2   = "🟡"
-    Error2     = "🔴"
-    Build      = "🔨"
-    Deploy     = "🚀"
-    Test       = "🧪"
-    Monitor    = "📊"
-    Complete   = "✨"
-    Anchor     = "⚓"
-}
-
-# ═══════════════════════════════════════════════════════════════
-# FUNCIONES AUXILIARES
-# ═══════════════════════════════════════════════════════════════
-
-function Write-ColorOutput([string]$Message, [string]$Color = "White") {
-    Write-Host $Message -ForegroundColor $Color
-}
-
-function Print-Header([string]$Title) {
-    Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║ $Title" -ForegroundColor Cyan
-    Write-Host "╚══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
-}
-
-function Print-Status([string]$Item, [string]$Status) {
-    $statusColor = switch($Status) {
-        "✅" { "Green" }
-        "⏳" { "Yellow" }
-        "❌" { "Red" }
-        default { "White" }
-    }
-    Write-Host "$Status $Item" -ForegroundColor $statusColor
-}
-
-function Test-CommandExists([string]$Command) {
-    $null = Get-Command $Command -ErrorAction SilentlyContinue
-    return $?
-}
-
-# ═══════════════════════════════════════════════════════════════
-# VALIDACIÓN DE PREREQUISITES
-# ═══════════════════════════════════════════════════════════════
 
 function Validate-Prerequisites {
     Print-Header "🔍 VALIDANDO PREREQUISITES"
@@ -102,96 +21,98 @@ function Validate-Prerequisites {
             $allPassed = $false
         }
     }
-    
     if (-not $allPassed) {
         Write-ColorOutput "`n❌ Faltan prerequisites. Por favor instalalos primero.`n" Red
         exit 1
     }
-    
-    Write-ColorOutput "`n✅ Todos los prerequisites están instalados`n" Green
+    Write-ColorOutput "`n[OK] Todos los prerequisites están instalados`n" Green
+        return $true
 }
 
+}
 # ═══════════════════════════════════════════════════════════════
 # VALIDACIÓN PRE-PUSH
 # ═══════════════════════════════════════════════════════════════
 
 function Validate-PrePush {
-    Print-Header "✅ VALIDACIÓN PRE-PUSH"
     
     $errors = @()
     
     # Check 1: packages.lock.json existe
     if (-not (Test-Path "packages.lock.json")) {
-        $errors += "❌ packages.lock.json no encontrado en root"
+        $errors += "[ERR] packages.lock.json no encontrado en root"
     } else {
-        Print-Status "packages.lock.json" "✅"
+        Print-Status "packages.lock.json" "[OK]"
     }
     
     # Check 2: Program.cs tiene DATABASE_URL
     $programContent = Get-Content "backend/Program.cs" -Raw
     if ($programContent -match 'DATABASE_URL') {
-        Print-Status "Program.cs configurado" "✅"
+        Print-Status "Program.cs configurado" "[OK]"
     } else {
-        $errors += "❌ Program.cs no tiene DATABASE_URL"
+        $errors += "[ERR] Program.cs no tiene DATABASE_URL"
     }
     
     # Check 3: Tests.csproj existe
     if (Test-Path "backend/Tests/Tests.csproj") {
-        Print-Status "Tests.csproj presente" "✅"
+        Print-Status "Tests.csproj presente" "[OK]"
     } else {
-        $errors += "❌ Tests.csproj no encontrado"
+        $errors += "[ERR] Tests.csproj no encontrado"
     }
     
     # Check 4: Workflows presentes
     $workflowCount = (Get-ChildItem ".github/workflows/*.yml" -ErrorAction SilentlyContinue).Count
     if ($workflowCount -ge 5) {
-        Print-Status "Workflows: $workflowCount encontrados" "✅"
+        Print-Status "Workflows: $workflowCount encontrados" "[OK]"
     } else {
-        $errors += "❌ Workflows incompletos ($workflowCount encontrados)"
+        $errors += "[ERR] Workflows incompletos - $workflowCount encontrados"
     }
     
     # Check 5: No secrets en código
     $secretsFound = $false
-    Get-ChildItem -Path "src", "backend" -Recurse -Include "*.ts", "*.tsx", "*.cs" |
-        ForEach-Object {
-            $content = Get-Content $_ -Raw
-            if ($content -match "(password|token|secret|api_key)\s*=\s*['\"]") {
-                Write-ColorOutput "  ⚠️  Posible secret encontrado: $_" Yellow
+    Get-ChildItem -Path "src", "backend" -Recurse -Include "*.ts", "*.tsx", "*.cs" | ForEach-Object {
+        $content = Get-Content $_ -Raw
+        if ($content -match '(password|token|secret|api_key)') {
+            if ($content -match '=\s*[''\"]') {
+                Write-ColorOutput "  [WARN]  Posible secret encontrado: $_" Yellow
                 $secretsFound = $true
             }
         }
-    
-    if (-not $secretsFound) {
-        Print-Status "No secrets hardcodeados" "✅"
-    } else {
-        $errors += "⚠️  Posibles secrets encontrados en código"
     }
     
+
+    if (-not $secretsFound) {
+        Print-Status "No secrets hardcodeados" "[OK]"
+    } else {
+        $errors += "[WARN]  Posibles secrets encontrados en código"
+    }
+
     # Check 6: .gitignore completo
     if (Test-Path ".gitignore") {
-        Print-Status ".gitignore presente" "✅"
+        Print-Status ".gitignore presente" "[OK]"
     } else {
-        $errors += "⚠️  .gitignore no encontrado (recomendado)"
+        $errors += "[WARN]  .gitignore no encontrado (recomendado)"
     }
-    
+
     # Check 7: Git status limpio
     $gitStatus = git status --porcelain
     if ($gitStatus.Length -gt 0) {
-        Print-Status "Git status: cambios detectados" "⏳"
+        Print-Status "Git status: cambios detectados" "[WAIT]"
     } else {
-        Print-Status "Git status: limpio" "✅"
+        Print-Status "Git status: limpio" "[OK]"
     }
-    
+
     # Resumen
-    Write-Host "`n" + ("─" * 60) + "`n"
+    Write-Host "\n------------------------------------------------------------\n"
     if ($errors.Count -eq 0) {
-        Write-ColorOutput "✅ VALIDACIÓN EXITOSA - Listo para push" Green
+            if ($content -match '=\s*[''"]') {
         return $true
     } else {
-        Write-ColorOutput "❌ VALIDACIÓN FALLIDA - Errores encontrados:" Red
+        Write-ColorOutput "[ERR] VALIDACIÓN FALLIDA - Errores encontrados:" Red
         $errors | ForEach-Object { Write-ColorOutput "   $_" Red }
         return $false
     }
+}
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -199,7 +120,7 @@ function Validate-PrePush {
 # ═══════════════════════════════════════════════════════════════
 
 function Monitor-Workflows {
-    Print-Header "📊 MONITOREANDO WORKFLOWS"
+    Print-Header "[MONITOR] MONITOREANDO WORKFLOWS"
     
     Write-ColorOutput "Nota: Los workflows se triggerean automáticamente en GitHub Actions" Cyan
     Write-ColorOutput "URL: https://github.com/campanerasanti-web/Serendipity-Anthropos-Core/actions`n" Cyan
@@ -220,29 +141,29 @@ function Monitor-Workflows {
 # ═══════════════════════════════════════════════════════════════
 
 function Deploy-ToNetlify {
-    Print-Header "🚀 DEPLOY A NETLIFY"
+    Print-Header "[DEPLOY] DEPLOY A NETLIFY"
     
     # Check prerequisite
     if (-not (Test-CommandExists "netlify")) {
-        Write-ColorOutput "❌ Netlify CLI no instalado" Red
-        Write-ColorOutput "Instalá con: npm install -g netlify-cli`n" Yellow
+        Write-ColorOutput "[ERR] Netlify CLI no instalado" Red
+        Write-ColorOutput "Instalá con: npm install -g netlify-cli\n" Yellow
         return $false
     }
     
     # Check token
     if (-not $env:NETLIFY_AUTH_TOKEN) {
-        Write-ColorOutput "❌ NETLIFY_AUTH_TOKEN no configurado" Red
-        Write-ColorOutput "Generá token en: https://app.netlify.com/user/applications/personal`n" Yellow
+        Write-ColorOutput "[ERR] NETLIFY_AUTH_TOKEN no configurado" Red
+        Write-ColorOutput "Generá token en: https://app.netlify.com/user/applications/personal\n" Yellow
         return $false
     }
     
-    Write-ColorOutput "✅ Prerequisites verificados`n" Green
+    Write-ColorOutput "[OK] Prerequisites verificados\n" Green
     
     # Build
     Write-Host "Buildiendo frontend..." -ForegroundColor Cyan
     npm run build
     if ($LASTEXITCODE -ne 0) {
-        Write-ColorOutput "❌ Build fallido" Red
+        Write-ColorOutput "[ERR] Build fallido" Red
         return $false
     }
     
@@ -250,7 +171,7 @@ function Deploy-ToNetlify {
     Write-Host "`nDeployando a Netlify..." -ForegroundColor Cyan
     netlify deploy --prod
     
-    Write-ColorOutput "`n✅ Deploy completado" Green
+    Write-ColorOutput "\n[OK] Deploy completado" Green
     return $true
 }
 
@@ -259,7 +180,7 @@ function Deploy-ToNetlify {
 # ═══════════════════════════════════════════════════════════════
 
 function Show-Status {
-    Print-Header "📈 ESTADO DEL SISTEMA"
+    Print-Header "[INFO] ESTADO DEL SISTEMA"
     
     Write-Host "Backend Status:"
     Write-ColorOutput "  Servicios: 14" Cyan
@@ -272,15 +193,14 @@ function Show-Status {
     Write-ColorOutput "  Tests: 0 (WIP)" Yellow
     
     Write-Host "`nCI/CD Status:"
-    Write-ColorOutput "  Workflows: 8/8 ✅" Green
-    Write-ColorOutput "  Tests: ⏳ (esperando secrets)" Yellow
-    Write-ColorOutput "  Deploy: ⏳ (Netlify pendiente)" Yellow
+    Write-ColorOutput "  Workflows: 8/8 [OK]" Green
+    Write-ColorOutput "  Tests: [WAIT] (esperando secrets)" Yellow
+    Write-ColorOutput "  Deploy: [WAIT] (Netlify pendiente)" Yellow
     
     Write-Host "`nAcciones Requeridas:"
-    Write-ColorOutput "  1. ⏳ Agregar secrets a GitHub" Yellow
-    Write-ColorOutput "  2. ⏳ Ejecutar validate antes de push" Yellow
-    Write-ColorOutput "  3. ⏳ Verificar workflows verdes" Yellow
-    Write-ColorOutput "  4. ⏳ Configurar Netlify token" Yellow
+    Write-ColorOutput "  2. [WAIT] Ejecutar validate antes de push" Yellow
+    Write-ColorOutput "  3. [WAIT] Verificar workflows verdes" Yellow
+    Write-ColorOutput "  4. [WAIT] Configurar Netlify token" Yellow
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -288,7 +208,7 @@ function Show-Status {
 # ═══════════════════════════════════════════════════════════════
 
 function Show-Menu {
-    Print-Header "🎯 SOFIA AUTOMATION ORCHESTRATOR"
+    Print-Header "[INFO] SOFIA AUTOMATION ORCHESTRATOR"
     
     Write-Host "Seleccioná una acción:`n"
     Write-Host "  1) Validar ambiente (validate)"
@@ -325,14 +245,14 @@ function Execute-FullMode {
     Write-Host "`n"
     $valid = Validate-PrePush
     
-    if (-not $valid) {
-        Write-ColorOutput "`n❌ Por favor corregí los errores antes de continuar" Red
-        return
-    }
+        if (-not $valid) {
+            Write-ColorOutput "\n[ERR] Por favor corregí los errores antes de continuar" Red
+            return
+        }
     
     # 3. Git commit y push
     Write-Host "`n"
-    Print-Header "📤 GIT COMMIT & PUSH"
+    Print-Header "[INFO] GIT COMMIT and PUSH"
     
     Write-Host "Cambios a commitear:" -ForegroundColor Cyan
     git status --short
@@ -349,7 +269,7 @@ function Execute-FullMode {
     Write-Host "Pusheando a GitHub..." -ForegroundColor Cyan
     git push
     
-    Write-ColorOutput "`n✅ Git push completado - Workflows triggerearán automáticamente" Green
+        Write-ColorOutput "\n[OK] Git push completado - Workflows triggerearán automáticamente" Green
     
     # 4. Monitor
     Write-Host "`n"
@@ -365,7 +285,7 @@ function Execute-FullMode {
         Deploy-ToNetlify
     }
     
-    Write-ColorOutput "`n✨ AUTOMATIZACIÓN COMPLETADA`n" Green
+        Write-ColorOutput "\n[COMPLETE] AUTOMATIZACIÓN COMPLETADA\n" Green
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -400,7 +320,7 @@ function Main {
         Main -Mode $selectedMode
     }
     
-    Write-Host "`n$($emoji.Anchor) Fin de ejecución`n" -ForegroundColor Magenta
+        Write-Host "\n$($emoji.Anchor) Fin de ejecución\n" -ForegroundColor Magenta
 }
 
 # Ejecutar

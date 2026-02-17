@@ -1,19 +1,22 @@
+headersOrigin = "config"
+redirectsOrigin = "config"
 plugins = []
-headers = []
-redirects = []
+functionsDirectory = "C:\\Users\\santiago campanera\\OneDrive\\Desktop\\codigo\\functions"
+functionsDirectoryOrigin = "config-v1"
 
 [functions]
 
 [functions."*"]
 
 [build]
-publish = "dist"
-publishOrigin = "ui"
-commandOrigin = "ui"
+publish = "C:\\Users\\santiago campanera\\OneDrive\\Desktop\\codigo\\dist"
+publishOrigin = "config"
+commandOrigin = "config"
 command = "npm run build"
-base = "."
+functions = "C:\\Users\\santiago campanera\\OneDrive\\Desktop\\codigo\\functions"
 
 [build.environment]
+NODE_ENV = "production"
 
 [build.processing]
 
@@ -26,3 +29,37 @@ base = "."
 [build.processing.js]
 
 [build.services]
+
+[[headers]]
+for = "/*"
+
+[headers.values]
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "SAMEORIGIN"
+X-XSS-Protection = "1; mode=block"
+Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+for = "/*.html"
+
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"
+Content-Type = "text/html; charset=utf-8"
+
+[[headers]]
+for = "/assets/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

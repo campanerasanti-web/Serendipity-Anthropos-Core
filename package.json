@@ -29,11 +29,14 @@
     "ops:assign": "tsx scripts/assign-flow-owners.ts"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@sentry/react": "^10.38.0",
     "@sentry/tracing": "^7.120.4",
     "@sentry/vite-plugin": "^4.9.1",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.39.7",
     "@tanstack/react-query": "^5.28.0",
+    "@testing-library/react": "^16.3.2",
     "axios": "^1.13.5",
     "chart.js": "^4.5.1",
     "cors": "^2.8.6",
@@ -43,6 +46,7 @@
     "jspdf": "^4.1.0",
     "lucide-react": "^0.344.0",
     "multer": "^2.0.2",
+    "next": "^16.1.6",
     "puppeteer": "^24.37.2",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.3.1",
@@ -54,6 +58,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^25.2.3",
     "@types/react": "^18.2.64",

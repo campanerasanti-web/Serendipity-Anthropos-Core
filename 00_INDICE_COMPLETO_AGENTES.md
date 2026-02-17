@@ -54,14 +54,14 @@
 ### NIVEL 3: SCRIPTS (¿CÓMO EJECUTO?)
 
 ```powershell
-# Verificar estado completo
+# PASO 1: Diagnóstico inicial (prioridad máxima)
 & .\health-check.ps1
 
-# Crear agentes faltantes (backup)
+# PASO 2: Restaurar agentes faltantes (solo si el diagnóstico lo indica)
 & .\despertar-agentes.ps1
 
-# Ejecutar verificación completa
-& .\activate-all-agents.ps1
+# PASO 3: Verificación exhaustiva del sistema (siempre al final)
+& .\activate-al1l-agents.ps
 ```
 
 ---

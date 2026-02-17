@@ -1,9 +1,9 @@
 import React from 'react';
-import { NotificationUniversal } from '../types/notification';
+import { NotificationUniversal as NotificationUniversalType } from '../types/notification';
 import styles from '../styles/NotificationUniversal.module.css';
 
 interface Props {
-  notification: NotificationUniversal;
+  notification: NotificationUniversalType;
   onRead: (id: string) => void;
 }
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { fireEvent } from '@testing-library/dom';
 import { NotificationUniversal } from '../components/NotificationUniversal';
 import { NotificationUniversal as NotificationType } from '../types/notification';
 

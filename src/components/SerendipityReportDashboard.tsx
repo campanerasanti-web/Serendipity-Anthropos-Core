@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader } from './ui/Card';
-import { Button } from './ui/Button';
+import Card from './ui/Card';
 import jsPDF from 'jspdf';
 
 interface ReportData {
@@ -118,10 +117,10 @@ export default function SerendipityReportDashboard() {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <Card>
-        <CardHeader>
+        <div className="mb-4">
           <h2 className="text-xl font-bold">Reporte Diario - {report.date}</h2>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div>
           <div className="mb-4">
             <strong>Estado Financiero</strong>
             <ul>
@@ -159,8 +158,8 @@ export default function SerendipityReportDashboard() {
               ))}
             </ul>
           </div>
-          <Button onClick={exportPDF}>Exportar a PDF</Button>
-        </CardContent>
+          <button onClick={exportPDF} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Exportar a PDF</button>
+        </div>
       </Card>
     </div>
   );

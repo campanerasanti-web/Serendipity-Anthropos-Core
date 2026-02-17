@@ -1,13 +1,3 @@
-        /// <summary>
-        /// GET /api/google-workspace/google-users
-        /// Lista todos los usuarios autenticados con Google OAuth
-        /// </summary>
-        [HttpGet("google-users")]
-        public IActionResult GetGoogleUsers()
-        {
-            var users = _db.GoogleUsers.OrderByDescending(u => u.CreatedAt).ToList();
-            return Ok(users);
-        }
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -22,8 +12,8 @@ namespace ElMediadorDeSofia.Controllers
     {
         private readonly GoogleWorkspaceService _googleWorkspaceService;
         private readonly ILogger<GoogleWorkspaceController> _logger;
-
         private readonly Data.AppDbContext _db;
+
         public GoogleWorkspaceController(GoogleWorkspaceService googleWorkspaceService, ILogger<GoogleWorkspaceController> logger, Data.AppDbContext db)
         {
             _googleWorkspaceService = googleWorkspaceService;

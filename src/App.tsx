@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth, LoginForm, UserProfile } from './components/AuthManager';
 import Dashboard from './components/Dashboard';
+import GoogleUsersSection from './components/GoogleUsersSection';
 import { useNotification } from './hooks/useNotification';
 import { NotificationUniversal } from './components/NotificationUniversal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -55,7 +56,7 @@ function ErrorButton() {
   );
 }
 
-type Page = 'serendipity' | 'dashboard' | 'admin' | 'visualizations' | 'hermetic' | 'sofia';
+type Page = 'serendipity' | 'dashboard' | 'admin' | 'visualizations' | 'hermetic' | 'sofia' | 'googleusers';
 
 const queryClient = new QueryClient();
 
@@ -63,10 +64,28 @@ const queryClient = new QueryClient();
 import { initializeAutonomicSystem } from './services/autonomic-system';
 const autonomicGlobal = initializeAutonomicSystem();
 
+
+const navButtonClass = (active: boolean) =>
+  `${styles.navButton} ${active ? styles.navButtonActive : ''}`;
+
 const AppContent = () => {
+    // Cargar datos para VisualizationDashboard
+    const { data: metrics = [] } = useQuery({
+      queryKey: ['metrics'],
+      queryFn: fetchLast30DaysMetrics
+    });
+    const { data: invoices = [] } = useQuery({
+      queryKey: ['invoices'],
+      queryFn: localDataService.fetchInvoices
+    });
+    const { data: fixedCosts = [] } = useQuery({
+      queryKey: ['fixedCosts'],
+      queryFn: localDataService.fetchFixedCosts
+    });
   const [currentPage, setCurrentPage] = useState<Page>('serendipity');
   const { notifications, addNotification, markAsRead } = useNotification();
   const { user, loading } = useAuth();
+  const autonomic = useAutonomicBody();
 
   // Ejemplo: agregar notificación universal
   const handleAddNotification = () => {
@@ -124,6 +143,9 @@ const AppContent = () => {
             <Settings width={16} height={16} />
             Admin
           </button>
+          <button onClick={() => setCurrentPage('googleusers')} className={navButtonClass(currentPage === 'googleusers')}>
+            <span role="img" aria-label="Google">🔎</span> Usuarios Google
+          </button>
 
           {/* 🧪 Botón de prueba de Sentry */}
           <ErrorButton />
@@ -170,94 +192,11 @@ const AppContent = () => {
         {currentPage === 'dashboard' && <Dashboard />}
         {currentPage === 'hermetic' && <HermeticBodyDashboard />}
         {currentPage === 'sofia' && <SofiaAgentsDashboard />}
-        {currentPage === 'visualizations' && <VisualizationDashboard />}
+        {currentPage === 'visualizations' && (
+          <VisualizationDashboard metrics={metrics} invoices={invoices} fixedCosts={fixedCosts} />
+        )}
         {currentPage === 'admin' && <AdminDashboard />}
-      </div>
-    </div>
-  );
-          <h1 style={{ color: 'white', fontSize: '1.5rem', margin: 0 }}> Serendipity Dashboard</h1>
-        </div>
-
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <button onClick={() => setCurrentPage('serendipity')} style={navButtonStyle(currentPage === 'serendipity')}>
-            <LayoutDashboard width={16} height={16} />
-            Serendipity
-          </button>
-          <button onClick={() => setCurrentPage('dashboard')} style={navButtonStyle(currentPage === 'dashboard')}>
-            <LayoutDashboard width={16} height={16} />
-            Zen
-          </button>
-          <button onClick={() => setCurrentPage('hermetic')} style={navButtonStyle(currentPage === 'hermetic')}>
-            <Flame width={16} height={16} />
-            Hermética
-          </button>
-          <button onClick={() => setCurrentPage('sofia')} style={navButtonStyle(currentPage === 'sofia')}>
-            <Activity width={16} height={16} />
-            Sofia
-          </button>
-          <button onClick={() => setCurrentPage('visualizations')} style={navButtonStyle(currentPage === 'visualizations')}>
-            <BarChart3 width={16} height={16} />
-            Visualizaciones
-          </button>
-          <button onClick={() => setCurrentPage('admin')} style={navButtonStyle(currentPage === 'admin')}>
-            <Settings width={16} height={16} />
-            Admin
-          </button>
-
-          {/* � Botón de prueba de Sentry */}
-          <ErrorButton />
-
-          {/* �🫀 Indicador del Sistema Nervioso Autónomo */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem',
-            background: autonomic.healthStatus === 'healthy' ? 'rgba(34, 197, 94, 0.2)' :
-                       autonomic.healthStatus === 'degraded' ? 'rgba(251, 146, 60, 0.2)' :
-                       'rgba(239, 68, 68, 0.2)',
-            border: `1px solid ${autonomic.healthStatus === 'healthy' ? 'rgb(34, 197, 94)' :
-                                autonomic.healthStatus === 'degraded' ? 'rgb(251, 146, 60)' :
-                                'rgb(239, 68, 68)'}`
-          }}>
-            <Heart width={16} height={16} style={{
-              animation: 'pulse 1.5s ease-in-out infinite',
-              color: autonomic.healthStatus === 'healthy' ? 'rgb(34, 197, 94)' :
-                     autonomic.healthStatus === 'degraded' ? 'rgb(251, 146, 60)' :
-                     'rgb(239, 68, 68)'
-            }} />
-            <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-              {autonomic.healthStatus === 'healthy' ? '✓ Sistema Vivo' :
-               autonomic.healthStatus === 'degraded' ? '⚠ Conexión Lenta' :
-               '✗ Desconectado'}
-            </span>
-            <button 
-              onClick={() => autonomic.syncNow()}
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: 'none',
-                color: 'white',
-                padding: '0.25rem 0.5rem',
-                borderRadius: '0.25rem',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                marginLeft: '0.5rem'
-              }}
-            >
-              Sincronizar
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div style={{ background: 'linear-gradient(to bottom right, rgb(15, 23, 42), rgb(15, 23, 42), rgb(49, 46, 129))' }}>
-        {currentPage === 'serendipity' && <SerendipityDashboard />}
-        {currentPage === 'dashboard' && <ZenDashboard />}
-        {currentPage === 'hermetic' && <HermeticBodyDashboard />}
-        {currentPage === 'sofia' && <SofiaAgentsDashboard />}
-        {currentPage === 'admin' && <AdminDashboard />}
-        {currentPage === 'visualizations' && <VisualizationDashboard metrics={metrics} invoices={invoices} fixedCosts={fixedCosts} />}
+        {currentPage === 'googleusers' && <GoogleUsersSection />}
       </div>
     </div>
   );
