@@ -1,0 +1,10 @@
+﻿{
+    "private":  true,
+    "name":  "frontend",
+    "version":  "0.0.0",
+    "scripts":  {
+                    "preview":  "vite preview",
+                    "build":  "vite build",
+                    "dev":  "vite"
+                }
+}

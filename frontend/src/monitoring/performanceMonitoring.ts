@@ -1,0 +1,64 @@
+/**
+ * Performance Monitoring Setup
+ * Integrates Sentry, metrics, and error tracking
+ */
+
+import * as Sentry from '@sentry/react';
+
+export const initializePerformanceMonitoring = () => {
+  const dsn = import.meta.env.VITE_SENTRY_DSN;
+  
+  if (!dsn) {
+    console.warn('⚠️ VITE_SENTRY_DSN not configured. Sentry will not track errors.');
+    return;
+  }
+
+  try {
+    Sentry.init({
+      dsn: dsn,
+      integrations: [],
+      tracesSampleRate: import.meta.env.DEV ? 1.0 : 0.1,
+      environment: import.meta.env.MODE,
+      release: '1.0.0',
+      sendDefaultPii: true,
+      beforeSend(event) {
+        // Opcional: filter eventos antes de enviar
+        return event;
+      },
+    });
+
+    console.log('✅ Sentry initialized successfully:', { dsn: dsn.substring(0, 30) + '...' });
+  } catch (error) {
+    console.error('❌ Failed to initialize Sentry:', error);
+  }
+};
+
+// Custom performance metrics
+export const performanceMetrics = {
+  // Dashboard load time
+  recordDashboardLoadTime: (duration: number) => {
+    Sentry.captureMessage(`Dashboard loaded in ${duration}ms`, 'info');
+    if (duration > 3000) {
+      Sentry.captureMessage(`⚠️ Dashboard slow load: ${duration}ms`, 'warning');
+    }
+  },
+
+  // API response time
+  recordApiTime: (endpoint: string, duration: number) => {
+    Sentry.captureMessage(`API ${endpoint}: ${duration}ms`, 'info');
+    if (duration > 2000) {
+      Sentry.captureException(new Error(`Slow API: ${endpoint} (${duration}ms)`));
+    }
+  },
+
+  // Realtime latency
+  recordRealtimeLatency: (latency: number) => {
+    if (latency > 1000) {
+      Sentry.captureMessage(`⚠️ Slow realtime update: ${latency}ms`, 'warning');
+    }
+  },
+};
+
+export const trackWebVitals = () => {
+  // Aquí podrías integrar web-vitals o métricas personalizadas
+};

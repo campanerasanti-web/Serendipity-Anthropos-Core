@@ -1,0 +1,1 @@
+Esta carpeta contiene todos los archivos y subcarpetas que estaban originalmente en la carpeta src de la raíz y que no tienen un equivalente directo en frontend/src. Revise y reubique según convenga para la nueva arquitectura modular.
